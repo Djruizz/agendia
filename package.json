@@ -13,6 +13,7 @@
   "dependencies": {
     "@nuxt/ui": "4.10.0",
     "@nuxtjs/supabase": "2.0.10",
+    "@tanstack/vue-query": "^5.101.4",
     "@tiptap/core": "^3.30.1",
     "@tiptap/extension-bubble-menu": "^3.30.1",
     "@tiptap/extension-code": "^3.30.1",
