@@ -5,7 +5,10 @@ export const useDeleteClient = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("clients").delete().eq("id", id);
+      const { error } = await supabase
+        .from("clients")
+        .update({ is_active: false })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

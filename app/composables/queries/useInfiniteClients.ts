@@ -1,51 +1,53 @@
 import { useInfiniteQuery } from "@tanstack/vue-query";
-import { _ } from "vue-router/dist/index-BN0B0y8a.js";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 export const useInfiniteClients = () => {
   const searchTerm = ref("");
+  const sortOrder = ref<"asc" | "desc">("asc");
 
   const supabase = useSupabaseClient();
-  const fetchClients = async ({
-    queryKey,
-    pageParam = 0,
-  }: {
-    queryKey: string[];
-    pageParam?: number;
-  }) => {
-    const [_, term] = queryKey;
+
+  const fetchClients = async ({ pageParam = 0 }: { pageParam?: number }) => {
     const from = pageParam * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
     let query = supabase
       .from("clients")
       .select("*")
-      .order("created_at", { ascending: false })
+      .eq("is_active", true)
+      .order("name", { ascending: sortOrder.value === "asc" })
       .range(from, to);
 
-    if (term) {
-      query = query.ilike("name", `%${term}%`);
+    if (searchTerm.value) {
+      query = query.ilike("name", `%${searchTerm.value}%`);
     }
+
     const { data, error } = await query;
     if (error) throw error;
     return {
       data,
-      nextPage: to + 1,
     };
   };
+
+  const queryKey = computed(() => [
+    "clients",
+    searchTerm.value,
+    sortOrder.value,
+  ]);
+
   const infiniteQuery = useInfiniteQuery({
-    queryKey: ["clients", searchTerm.value],
+    queryKey,
     queryFn: fetchClients,
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => {
-      const nextPage =
-        lastPage.data.length === PAGE_SIZE ? lastPage.nextPage : undefined;
-      return nextPage;
+    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+      return lastPage.data.length === PAGE_SIZE ? lastPageParam + 1 : undefined;
     },
   });
+
   return {
     ...infiniteQuery,
     searchTerm,
+    sortOrder,
   };
 };
