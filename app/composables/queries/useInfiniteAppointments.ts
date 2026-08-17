@@ -1,6 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/vue-query";
 import type { AppointmentWithRelations } from "~/types/appointments";
-import type { AppointmentStatusFilter } from "~/composables/utils/useAppointmentStatus";
 
 export type { AppointmentStatusFilter };
 

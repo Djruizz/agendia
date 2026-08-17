@@ -1,5 +1,4 @@
 import type { AppointmentWithRelations } from "~/types/appointments";
-import { useDateUtils } from "~/composables/utils/useDateUtils";
 
 type StatusColor =
   | "warning"
@@ -52,8 +51,9 @@ export const useAppointmentStatus = () => {
   const getStatusLabel = (status: AppointmentWithRelations["status"]) =>
     STATUS_META[status].label;
 
-  const getStatusColor = (status: AppointmentWithRelations["status"]): StatusColor =>
-    STATUS_META[status].color;
+  const getStatusColor = (
+    status: AppointmentWithRelations["status"],
+  ): StatusColor => STATUS_META[status].color;
 
   const getStatusIcon = (status: AppointmentWithRelations["status"]) =>
     STATUS_META[status].icon;

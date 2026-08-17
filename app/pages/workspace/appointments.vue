@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { AppointmentStatusFilter } from "../../composables/utils/useAppointmentStatus";
 import type { AppointmentWithRelations } from "../../types/appointments";
 
 definePageMeta({

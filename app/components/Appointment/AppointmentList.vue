@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { AppointmentWithRelations } from "../../types/appointments";
-import type { AppointmentStatusFilter } from "../../composables/utils/useAppointmentStatus";
 
 const props = defineProps<{
   appointments: AppointmentWithRelations[];
