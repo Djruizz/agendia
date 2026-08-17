@@ -1,8 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/vue-query";
 import type { AppointmentWithRelations } from "~/types/appointments";
 
-export type { AppointmentStatusFilter };
-
 const PAGE_SIZE = 5;
 const WEEKS_FOR_REMEMBER = 3;
 const MS_PER_WEEK = 1000 * 60 * 60 * 24 * 7;

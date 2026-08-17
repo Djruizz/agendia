@@ -24,13 +24,25 @@ const onStatusChange = (value: AppointmentStatusFilter) => {
   statusFilter.value = value;
 };
 
+const openFormModal = ref(false);
+const mode = ref<"create" | "edit">("create");
+const selectedAppointment = ref<AppointmentWithRelations | undefined>(
+  undefined,
+);
+
 const onDetail = (appointment: AppointmentWithRelations) => {
   // TODO: open detail modal/drawer
   console.warn("[appointments] detail", appointment.id);
 };
+const onCreate = () => {
+  openFormModal.value = true;
+  mode.value = "create";
+  selectedAppointment.value = undefined;
+};
 const onEdit = (appointment: AppointmentWithRelations) => {
-  // TODO: open edit modal
-  console.warn("[appointments] edit", appointment.id);
+  openFormModal.value = true;
+  mode.value = "edit";
+  selectedAppointment.value = appointment;
 };
 const onDelete = (appointment: AppointmentWithRelations) => {
   // TODO: open delete confirmation modal
@@ -61,6 +73,12 @@ const onReagendar = (appointment: AppointmentWithRelations) => {
           :class="{ 'animate-spin': isFetching }"
           @click="refetch()"
         />
+        <UButton
+          icon="i-lucide-plus"
+          color="primary"
+          @click="onCreate"
+          size="lg"
+        />
       </template>
     </LayoutPageHeader>
     <AppointmentList
@@ -77,6 +95,11 @@ const onReagendar = (appointment: AppointmentWithRelations) => {
       @delete="onDelete"
       @restore="onRestore"
       @reagendar="onReagendar"
+    />
+    <AppointmentModal
+      v-model:open="openFormModal"
+      :mode="mode"
+      :appointment="selectedAppointment"
     />
   </div>
 </template>

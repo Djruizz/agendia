@@ -1,15 +1,25 @@
 import { useQuery } from "@tanstack/vue-query";
 
-export function useClients() {
+export function useClients({
+  sortBy = "name",
+  asc = true,
+  limit,
+}: {
+  sortBy?: string;
+  asc?: boolean;
+  limit?: number;
+}) {
   const supabase = useSupabaseClient();
   return useQuery({
-    queryKey: ["clients"],
+    queryKey: ["clients", sortBy, asc, limit ?? "all"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("clients")
         .select("*")
         .eq("is_active", true)
-        .order("name", { ascending: true });
+        .order(sortBy, { ascending: asc });
+      if (limit) query = query.limit(limit);
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
