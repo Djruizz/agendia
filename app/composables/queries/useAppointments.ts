@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/vue-query";
 
-export function useServices() {
+export function useAppointments() {
   const supabase = useSupabaseClient();
+  const user = useSupabaseUser();
   return useQuery({
-    queryKey: ["services"],
+    queryKey: ["appointments"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("services")
-        .select("*")
-        .eq("is_active", true)
-        .order("name", { ascending: true });
+        .from("appointments")
+        .select("*, client:clients(*), service:services(*)")
+        .order("date", { ascending: true });
       if (error) throw error;
       return data;
     },

@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/vue-query";
 
-export function useServices() {
+export function useClients() {
   const supabase = useSupabaseClient();
   return useQuery({
-    queryKey: ["services"],
+    queryKey: ["clients"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("services")
+        .from("clients")
         .select("*")
         .eq("is_active", true)
         .order("name", { ascending: true });

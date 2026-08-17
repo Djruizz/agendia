@@ -8,7 +8,7 @@ defineProps<{
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex items-center justify-between gap-4">
       <div class="flex items-center gap-3 min-w-0">
         <div
           v-if="icon"
