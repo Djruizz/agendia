@@ -1,5 +1,5 @@
 <template>
-  <UHeader :toggle="false">
+  <UHeader :toggle="false" class="sticky-top">
     <template #title>
       <img
         src="/agendia-text-transparent.png"
@@ -11,10 +11,4 @@
       <UColorModeButton />
     </template>
   </UHeader>
-
-  <UMain>
-    <UContainer class="py-4">
-      <slot />
-    </UContainer>
-  </UMain>
 </template>

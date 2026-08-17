@@ -44,7 +44,7 @@ async function onSubmit(event: FormSubmitEvent<LoginSchema>) {
     icon: "i-lucide-circle-check",
     color: "success",
   });
-  navigateTo("/dashboard");
+  navigateTo("/workspace");
 }
 </script>
 <template>
