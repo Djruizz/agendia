@@ -3,10 +3,9 @@ const MS_PER_WEEK = 1000 * 60 * 60 * 24 * 7;
 const buildIntl = (
   locale: string,
   options: Intl.DateTimeFormatOptions,
-): Intl.DateTimeFormat =>
-  new Intl.DateTimeFormat(locale, options);
+): Intl.DateTimeFormat => new Intl.DateTimeFormat(locale, options);
 
-export const useDateUtils = (locale = "es-AR") => {
+export const DateUtils = (locale = "es-AR") => {
   const formatDate = (
     value: string | number | Date,
     options: Intl.DateTimeFormatOptions = {
@@ -30,10 +29,8 @@ export const useDateUtils = (locale = "es-AR") => {
     return Math.floor((now - then) / MS_PER_WEEK);
   };
 
-  const isWeeksOrMoreAgo = (
-    value: string | number | Date,
-    weeks: number,
-  ) => weeksSince(value) >= weeks;
+  const isWeeksOrMoreAgo = (value: string | number | Date, weeks: number) =>
+    weeksSince(value) >= weeks;
 
   return {
     formatDate,

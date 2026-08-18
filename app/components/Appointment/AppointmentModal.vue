@@ -30,6 +30,7 @@ async function onSubmit(payload: AppointmentSchema) {
     service_id: payload.service_id ?? null,
     date,
     duration_minutes: payload.duration_minutes,
+    status: payload.status,
     price: payload.price ?? null,
     notes: payload.notes ?? null,
   };
@@ -73,7 +74,7 @@ async function onSubmit(payload: AppointmentSchema) {
     :ui="{ footer: 'justify-end' }"
   >
     <template #body>
-      <AppointmentForm :appointment="appointment" @submit="onSubmit" />
+      <AppointmentForm :mode="mode" :appointment="appointment" @submit="onSubmit" />
     </template>
 
     <template #footer="{ close }">

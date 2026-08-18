@@ -7,6 +7,7 @@ import {
 } from "~/schemas/appointments";
 
 const props = defineProps<{
+  mode?: "create" | "edit";
   appointment?: AppointmentWithRelations;
 }>();
 
@@ -20,6 +21,14 @@ const { data: clients } = useClients({
   asc: true,
 });
 const { data: services } = useServices();
+const { getStatusLabel } = AppointmentStatus();
+
+const statusItems = computed(() => [
+  { label: getStatusLabel("PENDING"), value: "PENDING" },
+  { label: getStatusLabel("CONFIRMED"), value: "CONFIRMED" },
+  { label: getStatusLabel("COMPLETED"), value: "COMPLETED" },
+  { label: getStatusLabel("CANCELED"), value: "CANCELED" },
+]);
 
 const initialDate = props.appointment?.date
   ? new Date(props.appointment.date)
@@ -31,6 +40,7 @@ const state = reactive<AppointmentSchema>({
   date: formatDateInput(initialDate),
   time: formatTimeInput(initialDate),
   duration_minutes: 30,
+  status: "PENDING",
   price: undefined,
   notes: "",
 });
@@ -107,6 +117,7 @@ watch(
     state.date = formatDateInput(d);
     state.time = formatTimeInput(d);
     state.duration_minutes = val?.duration_minutes ?? 30;
+    state.status = val?.status ?? "PENDING";
     state.price = val?.price ?? undefined;
     state.notes = val?.notes ?? "";
     formRef.value?.clearErrors();
@@ -134,6 +145,7 @@ function onSubmit(event: FormSubmitEvent<AppointmentSchema>) {
     date: event.data.date,
     time: event.data.time,
     duration_minutes: event.data.duration_minutes,
+    status: event.data.status,
     price: event.data.price,
     notes: event.data.notes?.trim() || undefined,
   });
@@ -247,6 +259,21 @@ const updateDuration = () => {
         step="0.01"
         placeholder="0.00"
         icon="i-lucide-dollar-sign"
+        class="w-full"
+      />
+    </UFormField>
+
+    <UFormField
+      v-if="mode !== 'edit'"
+      name="status"
+      label="Estado"
+      required
+      class="col-span-2"
+    >
+      <USelect
+        v-model="state.status"
+        :items="statusItems"
+        icon="i-lucide-circle-dot"
         class="w-full"
       />
     </UFormField>

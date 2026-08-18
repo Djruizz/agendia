@@ -16,8 +16,8 @@ const emit = defineEmits<{
 }>();
 
 const { getStatusColor, getStatusIcon, isReagendada, needsFollowUp } =
-  useAppointmentStatus();
-const { formatDate, formatTime, weeksSince } = useDateUtils();
+  AppointmentStatus();
+const { formatDate, formatTime, weeksSince } = DateUtils();
 const { followUpViaWhatsApp } = useAppointmentActions();
 
 const clientName = computed(
@@ -78,15 +78,14 @@ const items = computed<DropdownMenuItem[][]>(() => {
   const status = props.appointment.status;
   const menuItems: DropdownMenuItem[][] = [];
 
-  if (status !== "CANCELED" && status !== "COMPLETED") {
-    menuItems.push([
-      {
-        label: "Editar",
-        icon: "i-lucide-pencil",
-        onSelect: () => emit("edit", props.appointment),
-      },
-    ]);
-  }
+  menuItems.push([
+    {
+      label: "Editar",
+      icon: "i-lucide-pencil",
+      onSelect: () => emit("edit", props.appointment),
+    },
+  ]);
+
   if (needsFollowUpAppt.value) {
     const followUpGroup: DropdownMenuItem[] = [];
     if (props.appointment.clients?.phone) {
@@ -131,6 +130,11 @@ const items = computed<DropdownMenuItem[][]>(() => {
 function onCardClick() {
   emit("detail", props.appointment);
 }
+
+const serviceWithPrice = (service: string, price: number | null) => {
+  if (!price) return service;
+  return `${service} - $${price}`;
+};
 </script>
 
 <template>
@@ -179,7 +183,9 @@ function onCardClick() {
               :label="weeksAgoText"
             />
           </div>
-          <p class="text-sm text-muted truncate">{{ serviceName }}</p>
+          <p class="text-sm text-muted truncate">
+            {{ serviceWithPrice(serviceName, props.appointment.price) }}
+          </p>
           <div class="flex items-center gap-3 mt-2">
             <div class="flex items-center gap-1.5">
               <UIcon

@@ -45,8 +45,8 @@ export const isPseudoStatus = (
 ): value is "REAGENDADA" | "REMEMBER" =>
   value === "REAGENDADA" || value === "REMEMBER";
 
-export const useAppointmentStatus = () => {
-  const { weeksSince } = useDateUtils();
+export const AppointmentStatus = () => {
+  const { weeksSince } = DateUtils();
 
   const getStatusLabel = (status: AppointmentWithRelations["status"]) =>
     STATUS_META[status].label;
