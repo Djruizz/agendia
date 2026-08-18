@@ -4,7 +4,7 @@
       <img
         src="/agendia-text-transparent.png"
         alt="Logo"
-        class="rounded-xl h-12"
+        class="rounded-xl h-10"
       />
     </template>
     <template #right>
