@@ -51,7 +51,7 @@ const features = [
       </p>
       <div class="flex flex-wrap items-center justify-center gap-3">
         <UButton
-          to="/login"
+          to="/workspace"
           size="xl"
           icon="i-lucide-log-in"
           label="Entrar a la app"
@@ -100,7 +100,7 @@ const features = [
         © {{ new Date().getFullYear() }} Agendia
       </p>
       <UButton
-        to="/login"
+        to="/workspace"
         variant="ghost"
         size="sm"
         icon="i-lucide-log-in"

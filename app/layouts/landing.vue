@@ -10,11 +10,7 @@
       </NuxtLink>
     </template>
     <template #right>
-      <UButton
-        to="/login"
-        icon="i-lucide-log-in"
-        label="Entrar"
-      />
+      <UButton to="/workspace" icon="i-lucide-log-in" label="Entrar" />
       <UColorModeButton />
     </template>
   </UHeader>
