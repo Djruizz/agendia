@@ -10,6 +10,16 @@ export default defineNuxtConfig({
     redirect: false,
   },
   ssr: false,
+  app: {
+    head: {
+      link: [
+        {
+          rel: "manifest",
+          href: "/manifest.webmanifest",
+        },
+      ],
+    },
+  },
   pwa: {
     registerType: "autoUpdate",
     manifest: {
