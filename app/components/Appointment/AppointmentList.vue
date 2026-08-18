@@ -91,6 +91,7 @@ watch(statusFilter, (value) => emit("statusChange", value));
         item-label="label"
         item-value="value"
         class="sm:w-56"
+        icon="i-lucide-list-filter"
       >
         <template #item="{ item }">
           <div class="flex items-center gap-2">
