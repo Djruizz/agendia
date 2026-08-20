@@ -70,7 +70,7 @@ watch(sort, (value) => emit("sort", value));
     </div>
 
     <div v-else class="space-y-4">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 px-1">
         <ClientCard
           v-for="client in clients"
           :key="client.id"

@@ -25,7 +25,7 @@ const emit = defineEmits<{
     <p class="text-muted text-sm">Aún no tienes servicios registrados</p>
   </div>
 
-  <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4 px-1">
     <ServiceCard
       v-for="service in services"
       :key="service.id"

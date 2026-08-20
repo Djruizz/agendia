@@ -114,7 +114,7 @@ watch(statusFilter, (value) => emit("statusChange", value));
       <p class="text-muted text-sm">No se encontraron citas</p>
     </div>
 
-    <div v-else class="space-y-4">
+    <div v-else class="space-y-4 px-1">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <AppointmentCard
           v-for="appointment in appointments"

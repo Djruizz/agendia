@@ -85,10 +85,14 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
 ## Convenciones clave
 
 - **Carpetas por dominio**: `app/components/{Appointment,Client,Service,Calendar,Layout}`.
-- **Composables agrupados**:
-  - `composables/queries/` — TanStack Query (`useAppointments`, `useInfiniteAppointments`, `useAppointmentsByDay`, `useAppointmentCounts`, `useClients`, `useInfiniteClients`, `useServices`).
-  - `composables/mutations/` — `useCreateX`, `useUpdateX`, `useDeleteX`. Invalidan por queryKey en `onSuccess`.
-  - `composables/utils/` — helpers funcionales (`AppointmentStatus()`, `DateUtils()`, `useAppointmentActions()`). **No son auto-imported del mismo modo que los composables de query/mutation** — se llaman como funciones: `const { getStatusColor } = AppointmentStatus();`.
+- **Composables agrupados por dominio** (cada carpeta contiene sus propias `queries/`, `mutations/`, `utils/` cuando aplique):
+  - `composables/Appointment/` — `queries/` (TanStack Query), `mutations/` (Create/Update/Delete), `utils/` (`AppointmentStatus()`, `AppointmentActions()`). Helpers se llaman como funciones: `const { getStatusColor } = AppointmentStatus();`.
+  - `composables/Client/` — `queries/`, `mutations/`.
+  - `composables/Service/` — `queries/`, `mutations/`.
+  - `composables/Dashboard/` — `queries/` agregadas (`useMonthAppointmentCount`, `useMonthRevenue`, `useTotalClients`, `useUpcomingAppointments`).
+  - `composables/User/` — `queries/`, `mutations/`, `storage/` (logo).
+  - `composables/shared/utils/` — helpers cross-domain (`DateUtils()`).
+  - Las mutaciones invalidan por queryKey raíz en `onSuccess` (ej. `["appointments"]` invalida list, day, counts).
 - **`@nuxt/ui` autoimports**: composables (`useToast`, `useSupabaseClient`, `useSupabaseUser`, `useInfiniteQuery`, etc.) están disponibles globalmente — no importarlos manualmente salvo tipos.
 - **`imports.dirs`** en `nuxt.config.ts` incluye `composables/**` y `types/**` para autoimports.
 - **Tipos**: `app/types/database.types.ts` es generado (no editar a mano); wrappers de dominio en `app/types/{appointments,clients,services}.ts`.
