@@ -15,10 +15,23 @@ definePageMeta({
     <div class="space-y-4">
       <SettingsSection
         icon="i-lucide-palette"
-        title="Tema"
-        description="Personalizá la apariencia de la aplicación."
+        title="Accesibilidad"
+        description="Mejorá la experiencia de uso de la aplicación."
       >
-        <SettingsColorSelect />
+        <div class="flex flex-col gap-3">
+          <SettingsRow
+            label="Color de la app"
+            description="Color principal de la marca"
+          >
+            <SettingsColorSelect />
+          </SettingsRow>
+          <SettingsRow
+            label="Apariencia"
+            description="Claro, oscuro o del sistema"
+          >
+            <UColorModeSelect />
+          </SettingsRow>
+        </div>
       </SettingsSection>
     </div>
   </div>

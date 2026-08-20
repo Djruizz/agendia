@@ -1,14 +1,23 @@
 import { z } from "zod";
 
 export const COLOR_THEMES = [
-  "pink",
-  "blue",
-  "green",
-  "purple",
   "red",
   "orange",
+  "amber",
+  "yellow",
+  "lime",
+  "green",
+  "emerald",
   "teal",
+  "cyan",
+  "sky",
+  "blue",
   "indigo",
+  "violet",
+  "purple",
+  "fuchsia",
+  "pink",
+  "rose",
 ] as const;
 
 export const TIME_FORMATS = ["12h", "24h"] as const;
