@@ -16,7 +16,7 @@ export type Database = {
     Tables: {
       appointments: {
         Row: {
-          client_id: string | null
+          client_id: string
           created_at: string
           date: string
           duration_minutes: number
@@ -30,7 +30,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          client_id?: string | null
+          client_id: string
           created_at?: string
           date: string
           duration_minutes: number
@@ -44,7 +44,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          client_id?: string | null
+          client_id?: string
           created_at?: string
           date?: string
           duration_minutes?: number
@@ -140,6 +140,24 @@ export type Database = {
           name?: string
           price?: number | null
           professional_id?: string | null
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          settings: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          settings?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          settings?: Json
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
