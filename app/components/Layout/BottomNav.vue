@@ -18,7 +18,7 @@ const items = [
 ];
 
 function isActive(to: string) {
-  return route.fullPath === to;
+  return route.path === to;
 }
 </script>
 

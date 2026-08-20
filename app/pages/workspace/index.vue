@@ -39,6 +39,7 @@ const monthLabel = computed(() =>
         icon-color-class="text-primary"
         :label="`Citas en ${monthLabel}`"
         :loading="monthCountLoading"
+        @click="navigateTo('/workspace/calendar')"
       >
         <template #value>
           <USkeleton v-if="monthCountLoading" class="h-7 w-16" />
@@ -54,6 +55,7 @@ const monthLabel = computed(() =>
         icon-color-class="text-info"
         label="Clientes totales"
         :loading="clientsLoading"
+        @click="navigateTo('/workspace/clients')"
       >
         <template #value>
           <USkeleton v-if="clientsLoading" class="h-7 w-12" />
