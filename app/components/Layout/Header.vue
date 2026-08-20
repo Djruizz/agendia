@@ -14,6 +14,13 @@ const isDark = computed({
 const items = computed<DropdownMenuItem[][]>(() => [
   [
     {
+      label: "Configuración",
+      icon: "i-lucide-settings",
+      to: "/workspace/settings",
+    },
+  ],
+  [
+    {
       label: "Modo oscuro",
       icon: "i-lucide-moon",
       type: "checkbox",
