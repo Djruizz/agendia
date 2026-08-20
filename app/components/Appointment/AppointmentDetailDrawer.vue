@@ -23,6 +23,7 @@ const {
   needsFollowUp,
 } = AppointmentStatus();
 const { formatDate, formatTime, weeksSince } = DateUtils();
+const { followUpViaWhatsApp } = useAppointmentActions();
 
 const clientName = computed(
   () => props.appointment?.clients?.name || "Sin cliente",
@@ -164,6 +165,11 @@ function onMarkReagendada() {
   open.value = false;
 }
 
+function onSendReminder() {
+  if (!props.appointment) return;
+  followUpViaWhatsApp(props.appointment);
+}
+
 function onEdit() {
   if (!props.appointment) return;
   emit("edit", props.appointment);
@@ -286,17 +292,32 @@ function onDelete() {
             </div>
           </div>
 
-          <div v-if="appointment.clients?.phone" class="flex items-start gap-3">
-            <UIcon
-              name="i-lucide-phone"
-              class="size-4 text-muted shrink-0 mt-0.5"
-            />
-            <div class="min-w-0">
-              <p class="text-xs text-muted">Teléfono</p>
-              <p class="text-sm text-highlighted">
-                {{ appointment.clients.phone }}
-              </p>
+          <div
+            v-if="appointment.clients?.phone"
+            class="flex items-start justify-between gap-3"
+          >
+            <div class="flex items-start gap-3">
+              <UIcon
+                name="i-lucide-phone"
+                class="size-4 text-muted shrink-0 mt-0.5"
+              />
+              <div class="min-w-0">
+                <p class="text-xs text-muted">Teléfono</p>
+                <p class="text-sm text-highlighted">
+                  {{ appointment.clients.phone }}
+                </p>
+              </div>
             </div>
+            <UButton
+              icon="i-lucide-message-circle"
+              variant="link"
+              color="success"
+              size="lg"
+              :aria-label="`Enviar mensaje a ${clientName}`"
+              :title="`Enviar mensaje a ${clientName}`"
+              target="_blank"
+              :to="`https://wa.me/${appointment.clients.phone}`"
+            />
           </div>
         </div>
 
@@ -358,6 +379,15 @@ function onDelete() {
         :icon="markReagendada.icon"
         class="w-full flex justify-center"
         @click="onMarkReagendada"
+      />
+      <UButton
+        v-if="needsFollowUpAppt"
+        label="Enviar recordatorio"
+        color="primary"
+        variant="soft"
+        icon="i-lucide-bell-ring"
+        class="w-full flex justify-center"
+        @click="onSendReminder"
       />
     </template>
   </UDrawer>

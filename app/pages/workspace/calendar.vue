@@ -84,7 +84,7 @@ const onCreate = () => {
       :counts="counts ?? new Map()"
       @prev="onPrev"
       @next="onNext"
-      class="mb-6"
+      class="mb-6 mx-auto"
     />
 
     <AppointmentManager
