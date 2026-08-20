@@ -79,7 +79,7 @@ function onSubmit(event: FormSubmitEvent<ServiceSchema>) {
       />
     </UFormField>
 
-    <UFormField name="duration" label="Duración (minutos)">
+    <UFormField name="duration_minutes" label="Duración (minutos)" required>
       <UInput
         v-model.number="durationMinutes"
         type="number"

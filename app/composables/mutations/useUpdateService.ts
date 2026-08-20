@@ -3,7 +3,7 @@ export const useUpdateService = () => {
   const supabase = useSupabaseClient();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { id: string; service: ServiceInsert }) => {
+    mutationFn: async (data: { id: string; service: ServiceUpdate }) => {
       const { error } = await supabase
         .from("services")
         .update({

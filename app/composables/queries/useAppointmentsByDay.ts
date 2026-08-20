@@ -16,7 +16,7 @@ export const useAppointmentsByDay = (selectedDate: Ref<string | null>) => {
 
       const { data, error } = await supabase
         .from("appointments")
-        .select("*, client:clients(*), service:services(*)")
+        .select("*, clients:clients(*), services:services(*)")
         .gte("date", startOfLocalDay(day).toISOString())
         .lte("date", endOfLocalDay(day).toISOString())
         .order("date", { ascending: true });

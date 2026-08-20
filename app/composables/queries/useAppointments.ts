@@ -6,7 +6,7 @@ export function useAppointments() {
   const user = useSupabaseUser();
 
   return useQuery({
-    queryKey: ["appointments"],
+    queryKey: ["appointments", "all"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("appointments")

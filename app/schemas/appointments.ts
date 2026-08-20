@@ -10,7 +10,7 @@ export const appointmentSchema = z.object({
     .min(1, "La duración debe ser mayor a 0")
     .max(1000000, "La duración debe ser menor a 1000000"),
   status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELED"], {
-    errorMap: () => ({ message: "Estado inválido" }),
+    error: "Estado inválido",
   }),
   price: z.number().optional(),
   notes: z.string().optional(),

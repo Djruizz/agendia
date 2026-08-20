@@ -23,28 +23,34 @@ const fields: AuthFormField[] = [
 ];
 const supabase = useSupabaseClient();
 const toast = useToast();
+const loading = ref(false);
 
 async function onSubmit(event: FormSubmitEvent<LoginSchema>) {
-  const { error } = await supabase.auth.signInWithPassword({
-    email: event.data.email,
-    password: event.data.password,
-  });
-  if (error) {
-    toast.add({
-      title: "Error",
-      description: "Credenciales invalidas",
-      icon: "i-lucide-circle-x",
-      color: "error",
+  loading.value = true;
+  try {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: event.data.email,
+      password: event.data.password,
     });
-    return;
+    if (error) {
+      toast.add({
+        title: "Error",
+        description: "Credenciales invalidas",
+        icon: "i-lucide-circle-x",
+        color: "error",
+      });
+      return;
+    }
+    toast.add({
+      title: "Success",
+      description: "Login exitoso",
+      icon: "i-lucide-circle-check",
+      color: "success",
+    });
+    return navigateTo("/workspace");
+  } finally {
+    loading.value = false;
   }
-  toast.add({
-    title: "Success",
-    description: "Login exitoso",
-    icon: "i-lucide-circle-check",
-    color: "success",
-  });
-  navigateTo("/workspace");
 }
 </script>
 <template>
@@ -55,6 +61,7 @@ async function onSubmit(event: FormSubmitEvent<LoginSchema>) {
       description="Ingresa con tu correo electrónico y contraseña"
       icon="i-lucide-user"
       :schema="loginSchema"
+      :loading="loading"
       @submit="onSubmit"
     >
     </UAuthForm>
