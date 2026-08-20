@@ -23,7 +23,7 @@ function openDeleteModalFn(service: Service) {
 </script>
 
 <template>
-  <div>
+  <div class="space-y-4">
     <LayoutPageHeader
       title="Servicios"
       description="Gestiona los servicios que ofreces"

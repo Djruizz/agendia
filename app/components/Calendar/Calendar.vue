@@ -22,12 +22,7 @@ const selectedDate = defineModel<string | null>("selectedDate", {
 
 const WEEKDAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
 
-const localDayKey = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-};
+const { localDayKey } = DateUtils();
 
 const monthLabel = computed(() =>
   new Intl.DateTimeFormat("es-AR", {

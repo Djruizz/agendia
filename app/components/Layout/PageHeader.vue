@@ -31,6 +31,6 @@ defineProps<{
         <slot name="actions" />
       </div>
     </div>
-    <USeparator orientation="horizontal" class="pb-4" />
+    <USeparator orientation="horizontal" />
   </div>
 </template>

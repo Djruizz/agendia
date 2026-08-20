@@ -32,10 +32,19 @@ export const DateUtils = (locale = "es-AR") => {
   const isWeeksOrMoreAgo = (value: string | number | Date, weeks: number) =>
     weeksSince(value) >= weeks;
 
+  const localDayKey = (value: string | number | Date) => {
+    const d = new Date(value);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
   return {
     formatDate,
     formatTime,
     weeksSince,
     isWeeksOrMoreAgo,
+    localDayKey,
   };
 };

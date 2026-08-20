@@ -44,7 +44,7 @@ const onCreate = () => {
 </script>
 
 <template>
-  <div>
+  <div class="space-y-4">
     <LayoutPageHeader
       title="Clientes"
       description="Gestiona tu cartera de clientes"

@@ -30,7 +30,7 @@ const onCreate = () => {
 </script>
 
 <template>
-  <div>
+  <div class="space-y-4">
     <LayoutPageHeader
       title="Citas"
       description="Consulta y administra tus citas"

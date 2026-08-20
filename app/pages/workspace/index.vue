@@ -1,63 +1,69 @@
 <script setup lang="ts">
-import type { FormSubmitEvent } from "@nuxt/ui";
-import { serviceSchema, type ServiceSchema } from "~/schemas/services";
-
 definePageMeta({
   layout: "workspace",
   middleware: "auth",
 });
 
-const { data: services } = useServices();
+const now = new Date();
+const year = ref(now.getFullYear());
+const month = ref(now.getMonth() + 1);
 
-const state = ref<ServiceSchema>({
-  name: "",
-  price: 0,
-  duration_minutes: 0,
-  description: "",
-});
-const { mutate: create } = useCreateService();
-const onSubmit = (form: FormSubmitEvent<ServiceSchema>) => {
-  create(form.data);
-};
-const { mutate: update } = useUpdateService();
-const updateDummy = () => {
-  update({
-    id: "0badf4df-b40a-4204-bc4b-3eff0cde5c19",
-    service: {
-      name: "Servicio actualizado",
-      price: Math.floor(Math.random() * 1000),
-      duration_minutes: Math.floor(Math.random() * 60),
-      description: "Descripción actualizada",
-    },
-  });
-};
+const { data: monthCount, isFetching: monthCountLoading } =
+  useMonthAppointmentCount(year, month);
+const { data: totalClients, isFetching: clientsLoading } = useTotalClients();
+
+const monthLabel = computed(() =>
+  new Intl.DateTimeFormat("es-AR", {
+    month: "long",
+  }).format(new Date(year.value, month.value - 1, 1)),
+);
 </script>
+
 <template>
-  <div>
+  <div class="space-y-4">
     <LayoutPageHeader
-      title="Dashboard"
+      title="Inicio"
       description="Resumen general de tu negocio"
       icon="i-lucide-home"
     />
-    <pre
-      class="overflow-x-auto whitespace-pre-wrap break-words max-w-full text-xs bg-elevated/40 p-3 rounded-lg"
-      >{{ services }}</pre
-    >
-    <UForm :schema="serviceSchema" @submit="onSubmit" :state="state">
-      <UFormField label="Nombre" name="name">
-        <UInput v-model="state.name" />
-      </UFormField>
-      <UFormField label="Precio" name="price">
-        <UInput v-model="state.price" type="number" />
-      </UFormField>
-      <UFormField label="Duración estimada (mins)" name="duration_minutes">
-        <UInput v-model="state.duration_minutes" type="number" />
-      </UFormField>
-      <UFormField label="Descripción" name="description">
-        <UInput v-model="state.description" />
-      </UFormField>
-      <UButton type="submit">Agregar servicio</UButton>
-    </UForm>
-    <UButton @click="updateDummy">Actualizar</UButton>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <HomeRevenueCard
+        :year="year"
+        :month="month"
+        :label="`Ganancias en ${monthLabel}`"
+      />
+      <HomeStatCard
+        icon="i-lucide-calendar-check"
+        icon-bg-class="bg-primary/10"
+        icon-color-class="text-primary"
+        :label="`Citas en ${monthLabel}`"
+        :loading="monthCountLoading"
+      >
+        <template #value>
+          <USkeleton v-if="monthCountLoading" class="h-7 w-16" />
+          <p v-else class="text-2xl font-bold text-highlighted">
+            {{ monthCount ?? 0 }}
+          </p>
+        </template>
+      </HomeStatCard>
+
+      <HomeStatCard
+        icon="i-lucide-users"
+        icon-bg-class="bg-info/10"
+        icon-color-class="text-info"
+        label="Clientes totales"
+        :loading="clientsLoading"
+      >
+        <template #value>
+          <USkeleton v-if="clientsLoading" class="h-7 w-12" />
+          <p v-else class="text-2xl font-bold text-highlighted">
+            {{ totalClients ?? 0 }}
+          </p>
+        </template>
+      </HomeStatCard>
+    </div>
+
+    <HomeUpcomingAppointmentsSection />
   </div>
 </template>

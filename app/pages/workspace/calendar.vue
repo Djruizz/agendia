@@ -4,18 +4,22 @@ definePageMeta({
   middleware: "auth",
 });
 
+const route = useRoute();
+const { localDayKey } = DateUtils();
 const now = new Date();
-const year = ref(now.getFullYear());
-const month = ref(now.getMonth() + 1);
 
-const localDayKey = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-};
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const queryDate =
+  typeof route.query.date === "string" && DATE_PATTERN.test(route.query.date)
+    ? route.query.date
+    : null;
 
-const selectedDate = ref<string | null>(localDayKey(now));
+const initialDate = queryDate ? new Date(`${queryDate}T00:00:00`) : now;
+
+const year = ref(initialDate.getFullYear());
+const month = ref(initialDate.getMonth() + 1);
+
+const selectedDate = ref<string | null>(queryDate ?? localDayKey(now));
 const statusFilter = ref<AppointmentStatusFilter>("ALL");
 
 const { data: counts } = useAppointmentCounts(year, month);
@@ -57,7 +61,7 @@ const onCreate = () => {
 </script>
 
 <template>
-  <div>
+  <div class="space-y-4">
     <LayoutPageHeader
       title="Calendario"
       description="Visualiza tus citas en el calendario"
