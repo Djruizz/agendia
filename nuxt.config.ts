@@ -9,6 +9,12 @@ export default defineNuxtConfig({
   supabase: {
     redirect: false,
   },
+  runtimeConfig: {
+    public: {
+      locale: "es-MX",
+      currency: "MXN",
+    },
+  },
   ssr: false,
   app: {
     head: {

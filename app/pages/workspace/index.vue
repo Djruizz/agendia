@@ -12,10 +12,10 @@ const { data: monthCount, isFetching: monthCountLoading } =
   useMonthAppointmentCount(year, month);
 const { data: totalClients, isFetching: clientsLoading } = useTotalClients();
 
+const { formatDate } = DateUtils();
+
 const monthLabel = computed(() =>
-  new Intl.DateTimeFormat("es-AR", {
-    month: "long",
-  }).format(new Date(year.value, month.value - 1, 1)),
+  formatDate(new Date(year.value, month.value - 1, 1), { month: "long" }),
 );
 </script>
 

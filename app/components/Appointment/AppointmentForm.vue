@@ -22,6 +22,7 @@ const { data: clients } = useClients({
 });
 const { data: services } = useServices();
 const { getStatusLabel } = AppointmentStatus();
+const { localDayKey } = DateUtils();
 
 const statusItems = computed(() => [
   { label: getStatusLabel("PENDING"), value: "PENDING" },
@@ -37,7 +38,7 @@ const initialDate = props.appointment?.date
 const state = reactive<AppointmentSchema>({
   client_id: "",
   service_id: undefined,
-  date: formatDateInput(initialDate),
+  date: localDayKey(initialDate),
   time: formatTimeInput(initialDate),
   duration_minutes: 30,
   status: "PENDING",
@@ -114,7 +115,7 @@ watch(
     const d = val?.date ? new Date(val.date) : new Date();
     state.client_id = val?.client_id ?? "";
     state.service_id = val?.service_id ?? undefined;
-    state.date = formatDateInput(d);
+    state.date = localDayKey(d);
     state.time = formatTimeInput(d);
     state.duration_minutes = val?.duration_minutes ?? 30;
     state.status = val?.status ?? "PENDING";
@@ -124,13 +125,6 @@ watch(
   },
   { immediate: true },
 );
-
-function formatDateInput(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
 
 function formatTimeInput(d: Date): string {
   const h = String(d.getHours()).padStart(2, "0");

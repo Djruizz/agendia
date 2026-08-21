@@ -22,14 +22,9 @@ const { data: previous, isFetching: previousLoading } = useMonthRevenue(
   prevMonth,
 );
 
-const currencyFormatter = new Intl.NumberFormat("es-MX", {
-  style: "currency",
-  currency: "MXN",
-});
+const { formatCurrency } = MoneyUtils();
 
-const formattedAmount = computed(() =>
-  currencyFormatter.format(current.value ?? 0),
-);
+const formattedAmount = computed(() => formatCurrency(current.value));
 
 const delta = computed(() => (current.value ?? 0) - (previous.value ?? 0));
 const hasPrevious = computed(() => (previous.value ?? 0) > 0);
@@ -53,9 +48,7 @@ const prefix = computed<"" | "+" | "-" | undefined>(() => {
   return undefined;
 });
 
-const amountLabel = computed(() =>
-  currencyFormatter.format(Math.abs(delta.value)),
-);
+const amountLabel = computed(() => formatCurrency(Math.abs(delta.value)));
 
 const pctLabel = computed(() =>
   pct.value === null ? undefined : `${pct.value}%`,

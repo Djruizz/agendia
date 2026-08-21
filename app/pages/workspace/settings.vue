@@ -12,16 +12,16 @@ definePageMeta({
       description="Ajustes generales de tu cuenta"
       icon="i-lucide-settings"
     />
-    <div class="space-y-4">
+    <div class="space-y-4 p-1">
       <SettingsSection
         icon="i-lucide-palette"
-        title="Accesibilidad"
+        title="Apariencia"
         description="Mejorá la experiencia de uso de la aplicación."
       >
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-4">
           <SettingsRow
-            label="Color de la app"
-            description="Color principal de la marca"
+            label="Color de la aplicación"
+            description="Personaliza la aplicación con tu color favorito."
           >
             <SettingsColorSelect />
           </SettingsRow>
@@ -30,6 +30,20 @@ definePageMeta({
             description="Claro, oscuro o del sistema"
           >
             <UColorModeSelect />
+          </SettingsRow>
+        </div>
+      </SettingsSection>
+      <SettingsSection
+        icon="i-lucide-user-cog"
+        title="Preferencias"
+        description="Ajusta tus preferencias de uso"
+      >
+        <div class="flex flex-col gap-3">
+          <SettingsRow
+            label="Formato de horario"
+            description="Elige el formato de horario que prefieras."
+          >
+            <SettingsTimeFormat />
           </SettingsRow>
         </div>
       </SettingsSection>

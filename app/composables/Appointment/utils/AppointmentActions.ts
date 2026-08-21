@@ -11,15 +11,13 @@ const buildWhatsAppUrl = (phone: string, message: string) => {
 };
 
 export const useAppointmentActions = () => {
+  const { formatDate } = DateUtils();
+
   const followUpViaWhatsApp = (appointment: AppointmentWithRelations) => {
     const phone = sanitizePhone(appointment.clients?.phone);
     if (!phone) return;
 
-    const dateLabel = new Intl.DateTimeFormat("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }).format(new Date(appointment.date));
+    const dateLabel = formatDate(appointment.date);
 
     const message =
       `Hola ${appointment.clients?.name ?? ""}, ` +

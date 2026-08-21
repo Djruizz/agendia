@@ -22,13 +22,13 @@ const selectedDate = defineModel<string | null>("selectedDate", {
 
 const WEEKDAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
 
-const { localDayKey } = DateUtils();
+const { localDayKey, formatDate } = DateUtils();
 
 const monthLabel = computed(() =>
-  new Intl.DateTimeFormat("es-AR", {
+  formatDate(new Date(props.year, props.month - 1, 1), {
     month: "long",
     year: "numeric",
-  }).format(new Date(props.year, props.month - 1, 1)),
+  }),
 );
 
 const firstWeekday = computed(() => {

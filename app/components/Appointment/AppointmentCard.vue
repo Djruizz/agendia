@@ -17,7 +17,7 @@ const emit = defineEmits<{
 
 const { getStatusColor, getStatusIcon, isReagendada, needsFollowUp } =
   AppointmentStatus();
-const { formatDate, formatTime, weeksSince } = DateUtils();
+const { formatDate, formatTime, weeksSince } = useDateUtils();
 const { followUpViaWhatsApp } = useAppointmentActions();
 
 const clientName = computed(

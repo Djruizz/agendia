@@ -19,13 +19,9 @@ const formattedDuration = computed(() => {
   return rem > 0 ? `${hrs}h ${rem}min` : `${hrs}h`;
 });
 
-const formattedPrice = computed(() => {
-  const price = props.service.price ?? 0;
-  return new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency: "MXN",
-  }).format(price);
-});
+const { formatCurrency } = MoneyUtils();
+
+const formattedPrice = computed(() => formatCurrency(props.service.price));
 
 const items = computed<DropdownMenuItem[][]>(() => [
   [

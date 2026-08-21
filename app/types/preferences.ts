@@ -1,4 +1,4 @@
-import type { ColorTheme } from "~/schemas/preferences";
+import type { ColorTheme, TimeFormat } from "~/schemas/preferences";
 
 export const COLOR_THEME_LABELS: Record<ColorTheme, string> = {
   red: "Rojo",
@@ -18,4 +18,9 @@ export const COLOR_THEME_LABELS: Record<ColorTheme, string> = {
   fuchsia: "Fucsia",
   pink: "Rosa",
   rose: "Rosado",
+};
+
+export const TIME_FORMAT_LABELS: Record<TimeFormat, string> = {
+  "12h": "12h",
+  "24h": "24h",
 };

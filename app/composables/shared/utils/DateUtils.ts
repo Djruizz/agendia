@@ -5,7 +5,14 @@ const buildIntl = (
   options: Intl.DateTimeFormatOptions,
 ): Intl.DateTimeFormat => new Intl.DateTimeFormat(locale, options);
 
-export const DateUtils = (locale = "es-AR") => {
+type DateUtilsOptions = {
+  locale?: string;
+};
+
+export const DateUtils = (opts: DateUtilsOptions = {}) => {
+  const config = useRuntimeConfig();
+  const locale = opts.locale ?? config.public.locale;
+
   const formatDate = (
     value: string | number | Date,
     options: Intl.DateTimeFormatOptions = {

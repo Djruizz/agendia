@@ -22,7 +22,8 @@ const {
   isReagendada,
   needsFollowUp,
 } = AppointmentStatus();
-const { formatDate, formatTime, weeksSince } = DateUtils();
+const { formatDate, formatTime, weeksSince } = useDateUtils();
+const { formatCurrency } = MoneyUtils();
 const { followUpViaWhatsApp } = useAppointmentActions();
 
 const clientName = computed(
@@ -287,7 +288,7 @@ function onDelete() {
             <div class="min-w-0">
               <p class="text-xs text-muted">Precio</p>
               <p class="text-sm text-highlighted">
-                ${{ appointment.price.toLocaleString("es-MX") }}
+                {{ formatCurrency(appointment.price) }}
               </p>
             </div>
           </div>

@@ -90,14 +90,15 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
   - `composables/Client/` — `queries/`, `mutations/`.
   - `composables/Service/` — `queries/`, `mutations/`.
   - `composables/Dashboard/` — `queries/` agregadas (`useMonthAppointmentCount`, `useMonthRevenue`, `useTotalClients`, `useUpcomingAppointments`).
-  - `composables/User/` — `queries/`, `mutations/`, `storage/` (logo).
-  - `composables/shared/utils/` — helpers cross-domain (`DateUtils()`).
+  - `composables/User/` — `queries/` (`useUserPreferences`), `mutations/` (`useUpdateUserPreferences`), `utils/` (`useTimeFormat()`, `useApplyUserPreferences()`), `storage/` (logo — `useUserLogo.ts`, **no implementado aún**, ghost code).
+  - `composables/shared/utils/` — helpers cross-domain: `DateUtils()` (factory pura, no reactiva), `useDateUtils()` (wrapper reactivo con `hour12` desde `useTimeFormat()`), `MoneyUtils()` (currency).
   - Las mutaciones invalidan por queryKey raíz en `onSuccess` (ej. `["appointments"]` invalida list, day, counts).
+  - **Estrategias de cache TanStack**: `setQueryData` en `onSuccess` para mutaciones que conocen el estado final (ej. `useUpdateUserPreferences` hace upsert + `select` y sabe el resultado). `invalidateQueries` para mutaciones que NO conocen el estado final o afectan múltiples queryKeys derivadas (ej. `useRemoveLogo` borra en Storage pero no sabe el nuevo `business_logo_path` → invalida `["user-preferences"]` para refetch). Componentes Settings sin side effects imperativos (ej. `SettingsTimeFormat`) no necesitan rollback en `onError` — la cache no se mutó en error y un `computed` getter auto-revierte el UI. Componentes con side effects imperativos (ej. `SettingsColorSelect` muta `appConfig.ui.colors.primary` optimistic) SÍ requieren rollback explícito en `onError`.
 - **`@nuxt/ui` autoimports**: composables (`useToast`, `useSupabaseClient`, `useSupabaseUser`, `useInfiniteQuery`, etc.) están disponibles globalmente — no importarlos manualmente salvo tipos.
 - **`imports.dirs`** en `nuxt.config.ts` incluye `composables/**` y `types/**` para autoimports.
 - **Tipos**: `app/types/database.types.ts` es generado (no editar a mano); wrappers de dominio en `app/types/{appointments,clients,services}.ts`.
-- **Schemas Zod**: `app/schemas/{appointments,clients,services,auth}.ts`. Los forms usan `UForm :schema="..."` y emiten el payload al modal padre.
-- **i18n hardcoded**: `DateUtils` usa `es-AR` por defecto; el formatea currency usa `es-MX`. **No hay sistema i18n** — todo el copy está inline en español.
+- **Schemas Zod**: `app/schemas/{appointments,clients,services,auth,preferences}.ts`. Los forms usan `UForm :schema="..."` y emiten el payload al modal padre. `preferences.ts` valida `user_preferences.settings` (JSON en DB) con defaults para que `parse({})` no rompa en registro inexistente.
+- **i18n hardcoded**: locale (`es-MX`) y currency (`MXN`) viven en `runtimeConfig.public` de `nuxt.config.ts`. `DateUtils` y `MoneyUtils` los leen vía `useRuntimeConfig()`. **No hay sistema i18n** — todo el copy está inline en español.
 - **`professional_id`**: cada insert en `appointments`, `clients`, `services` se le inyecta `user.value?.sub` desde la mutación (server lo autoriza via RLS).
 
 ## Quirks del código
@@ -109,6 +110,7 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
 - **`AppointmentForm`** auto-ajusta `duration_minutes` cuando se elige un servicio (default 30 si no hay servicio). Tiene lógica para preservar cliente/servicio inactivo en el select.
 - **`AppointmentCard` click** abre `AppointmentDetailDrawer`, pero **bloquea** la apertura si el cliente está inactivo (`is_active === false`) con un toast de error.
 - **Mutaciones invalidan por queryKey raíz** (ej. `["appointments"]` invalida todas las variantes: list, day, counts). Borrar una cita o servicio refresca también otras vistas automáticamente.
+- **`DateUtils()` es una factory pura** (no reactiva). Para componentes que muestran hora Y deben respetar la preferencia `time_format` del usuario, usar `useDateUtils()` — wrapper que inyecta `hour12` reactivo desde `useTimeFormat()`. `DateUtils()` directo es para composables que no muestran hora (`AppointmentActions` usa `formatDate`, `Calendar` usa `localDayKey`).
 
 ## Estructura
 
@@ -128,10 +130,11 @@ app/
       calendar.vue         # Calendar + useAppointmentsByDay + AppointmentManager
   middleware/auth.ts
   plugins/vue-query.ts
-  components/{Appointment,Client,Service,Calendar,Layout}/
-  composables/{queries,mutations,utils}/
-  schemas/{auth,appointments,clients,services}.ts   # Zod
-  types/{database.types,appointments,clients,services}.ts
+  components/{Appointment,Client,Service,Calendar,Layout,Home,Settings}/
+  composables/{Appointment,Client,Service,User,Dashboard,shared}/
+    cada dominio con queries/, mutations/, utils/, storage/ según aplique
+  schemas/{auth,appointments,clients,services,preferences}.ts   # Zod
+  types/{database.types,appointments,clients,services,preferences}.ts
 supabase/.temp/linked-project.json                  # generado por Supabase CLI
 ```
 
