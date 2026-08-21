@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { WEEKS_FOR_REMEMBER } from "~/composables/Appointment/utils/AppointmentStatus";
 
 export const COLOR_THEMES = [
   "red",
@@ -28,6 +29,12 @@ export const UserPreferencesSchema = z
   .object({
     color_theme: z.enum(COLOR_THEMES).default("pink"),
     time_format: z.enum(TIME_FORMATS).default("24h"),
+    weeks_to_follow_up: z
+      .number()
+      .int()
+      .min(1)
+      .max(52)
+      .default(WEEKS_FOR_REMEMBER),
     business_logo_path: z
       .string()
       .regex(LOGO_PATH_REGEX, "Path de logo inválido")
@@ -39,3 +46,4 @@ export const UserPreferencesSchema = z
 export type UserPreferencesSettings = z.infer<typeof UserPreferencesSchema>;
 export type ColorTheme = UserPreferencesSettings["color_theme"];
 export type TimeFormat = UserPreferencesSettings["time_format"];
+export type WeeksToFollowUp = UserPreferencesSettings["weeks_to_follow_up"];

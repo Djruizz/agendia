@@ -18,34 +18,36 @@ definePageMeta({
         title="Apariencia"
         description="Mejorá la experiencia de uso de la aplicación."
       >
-        <div class="flex flex-col gap-4">
-          <SettingsRow
-            label="Color de la aplicación"
-            description="Personaliza la aplicación con tu color favorito."
-          >
-            <SettingsColorSelect />
-          </SettingsRow>
-          <SettingsRow
-            label="Apariencia"
-            description="Claro, oscuro o del sistema"
-          >
-            <UColorModeSelect />
-          </SettingsRow>
-        </div>
+        <SettingsRow
+          label="Color de la aplicación"
+          description="Personaliza la aplicación con tu color favorito."
+        >
+          <SettingsColorSelect />
+        </SettingsRow>
+        <SettingsRow
+          label="Apariencia"
+          description="Claro, oscuro o del sistema"
+        >
+          <UColorModeSelect />
+        </SettingsRow>
       </SettingsSection>
       <SettingsSection
         icon="i-lucide-user-cog"
         title="Preferencias"
         description="Ajusta tus preferencias de uso"
       >
-        <div class="flex flex-col gap-3">
-          <SettingsRow
-            label="Formato de horario"
-            description="Elige el formato de horario que prefieras."
-          >
-            <SettingsTimeFormat />
-          </SettingsRow>
-        </div>
+        <SettingsRow
+          label="Formato de horario"
+          description="Elige el formato de horario que prefieras."
+        >
+          <SettingsTimeFormat />
+        </SettingsRow>
+        <SettingsRow
+          label="Semanas para recordar"
+          description="Cantidad de semanas para marcar citas completadas como 'para recordar'."
+        >
+          <SettingsWeeksFollowUp />
+        </SettingsRow>
       </SettingsSection>
     </div>
   </div>

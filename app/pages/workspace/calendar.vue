@@ -28,10 +28,11 @@ const { data: dayAppointments, isFetching: dayFetching } =
   useAppointmentsByDay(selectedDate);
 
 const { matchesStatus } = AppointmentStatus();
+const { weeksToFollowUp } = useWeeksToFollowUp();
 
 const filteredAppointments = computed(() =>
   (dayAppointments.value ?? []).filter((a) =>
-    matchesStatus(a, statusFilter.value),
+    matchesStatus(a, statusFilter.value, weeksToFollowUp.value),
   ),
 );
 

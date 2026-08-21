@@ -78,7 +78,7 @@ Tres roles por dominio (`Appointment`, `Client`, `Service`):
 
 `AppointmentStatusFilter` agrega dos valores que no son `appointment_status`:
 - `REAGENDADA`: `COMPLETED && followed_up`
-- `REMEMBER`: `COMPLETED && !followed_up && weeksSince(date) >= 3`
+- `REMEMBER`: `COMPLETED && !followed_up && weeksSince(date) >= weeksToFollowUp`. El valor viene de `user_preferences.settings.weeks_to_follow_up` (default `WEEKS_FOR_REMEMBER = 3`, exportado desde `AppointmentStatus.ts`). Usado en display logic (`needsFollowUp`, `matchesStatus`) y en query filter (`useInfiniteAppointments`). `queryKey` incluye `weeksToFollowUp.value` para que TanStack refetchee automáticamente al cambiar la preferencia. `useWeeksToFollowUp()` expone el valor como `ComputedRef<number>`.
 
 La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.eq("status","COMPLETED")` + filtros extra). Definidos en `app/composables/utils/AppointmentStatus.ts`.
 

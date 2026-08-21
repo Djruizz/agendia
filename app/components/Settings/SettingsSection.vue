@@ -25,6 +25,8 @@ withDefaults(
         </div>
       </div>
     </template>
-    <slot />
+    <div class="flex flex-col gap-6">
+      <slot />
+    </div>
   </UCard>
 </template>

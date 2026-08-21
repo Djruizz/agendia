@@ -18,6 +18,7 @@ const emit = defineEmits<{
 const { getStatusColor, getStatusIcon, isReagendada, needsFollowUp } =
   AppointmentStatus();
 const { formatDate, formatTime, weeksSince } = useDateUtils();
+const { weeksToFollowUp } = useWeeksToFollowUp();
 const { followUpViaWhatsApp } = useAppointmentActions();
 
 const clientName = computed(
@@ -68,7 +69,9 @@ const statusIconClasses = computed(() => {
 });
 
 const isReagendadaAppt = computed(() => isReagendada(props.appointment));
-const needsFollowUpAppt = computed(() => needsFollowUp(props.appointment));
+const needsFollowUpAppt = computed(() =>
+  needsFollowUp(props.appointment, weeksToFollowUp.value),
+);
 
 const weeksAgoText = computed(() => {
   return `${weeksSince(props.appointment.date)} semanas`;

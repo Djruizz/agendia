@@ -45,6 +45,8 @@ export const isPseudoStatus = (
 ): value is "REAGENDADA" | "REMEMBER" =>
   value === "REAGENDADA" || value === "REMEMBER";
 
+export const WEEKS_FOR_REMEMBER = 3;
+
 export const AppointmentStatus = () => {
   const { weeksSince } = DateUtils();
 
@@ -73,18 +75,20 @@ export const AppointmentStatus = () => {
 
   const needsFollowUp = (
     appt: Pick<AppointmentWithRelations, "status" | "followed_up" | "date">,
+    weeksToFollowUp: number,
   ) =>
     appt.status === "COMPLETED" &&
     appt.followed_up === false &&
-    weeksSince(appt.date) >= 3;
+    weeksSince(appt.date) >= weeksToFollowUp;
 
   const matchesStatus = (
     appt: AppointmentWithRelations,
     filter: AppointmentStatusFilter,
+    weeksToFollowUp: number,
   ): boolean => {
     if (filter === "ALL") return true;
     if (filter === "REAGENDADA") return isReagendada(appt);
-    if (filter === "REMEMBER") return needsFollowUp(appt);
+    if (filter === "REMEMBER") return needsFollowUp(appt, weeksToFollowUp);
     return appt.status === filter;
   };
 

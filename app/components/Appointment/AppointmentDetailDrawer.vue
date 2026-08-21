@@ -24,6 +24,7 @@ const {
 } = AppointmentStatus();
 const { formatDate, formatTime, weeksSince } = useDateUtils();
 const { formatCurrency } = MoneyUtils();
+const { weeksToFollowUp } = useWeeksToFollowUp();
 const { followUpViaWhatsApp } = useAppointmentActions();
 
 const clientName = computed(
@@ -70,7 +71,9 @@ const isReagendadaAppt = computed(() =>
 );
 
 const needsFollowUpAppt = computed(() =>
-  props.appointment ? needsFollowUp(props.appointment) : false,
+  props.appointment
+    ? needsFollowUp(props.appointment, weeksToFollowUp.value)
+    : false,
 );
 
 const weeksAgoText = computed(() => {
