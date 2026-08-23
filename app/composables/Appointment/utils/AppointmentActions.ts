@@ -11,7 +11,7 @@ const buildWhatsAppUrl = (phone: string, message: string) => {
 };
 
 export const useAppointmentActions = () => {
-  const { formatDate } = DateUtils();
+  const { formatDate, formatTime } = useDateUtils();
 
   const followUpViaWhatsApp = (appointment: AppointmentWithRelations) => {
     const phone = sanitizePhone(appointment.clients?.phone);
@@ -30,7 +30,35 @@ export const useAppointmentActions = () => {
     }
   };
 
+  const sendConfirmationViaWhatsApp = (appointment: AppointmentWithRelations) => {
+    const phone = sanitizePhone(appointment.clients?.phone);
+    if (!phone) return;
+
+    const dateLabel = formatDate(appointment.date, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    const timeLabel = formatTime(appointment.date, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const message =
+      `Hola ${appointment.clients?.name ?? ""}! ` +
+      `Te recordamos tu cita de ${appointment.services?.name ?? ""} ` +
+      `el ${dateLabel} a las ${timeLabel}. ` +
+      `Por favor confirma tu asistencia. ¡Gracias!`;
+
+    const url = buildWhatsAppUrl(phone, message);
+    if (import.meta.client) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return {
     followUpViaWhatsApp,
+    sendConfirmationViaWhatsApp,
   };
 };

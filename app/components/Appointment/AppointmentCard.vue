@@ -15,8 +15,14 @@ const emit = defineEmits<{
   reagendar: [appointment: AppointmentWithRelations];
 }>();
 
-const { getStatusColor, getStatusIcon, isReagendada, needsFollowUp } =
-  AppointmentStatus();
+const {
+  getStatusColor,
+  getStatusIcon,
+  isReagendada,
+  needsFollowUp,
+  canRestore,
+  canMarkReagendada,
+} = AppointmentStatus();
 const { formatDate, formatTime, weeksSince } = useDateUtils();
 const { weeksToFollowUp } = useWeeksToFollowUp();
 const { followUpViaWhatsApp } = useAppointmentActions();
@@ -89,22 +95,27 @@ const items = computed<DropdownMenuItem[][]>(() => {
     },
   ]);
 
+  if (canMarkReagendada(props.appointment)) {
+    menuItems.push([
+      {
+        label: "Marcar reagendada",
+        icon: "i-lucide-calendar-check",
+        color: "success",
+        onSelect: () => emit("reagendar", props.appointment),
+      },
+    ]);
+  }
+
   if (needsFollowUpAppt.value) {
     const followUpGroup: DropdownMenuItem[] = [];
     if (props.appointment.clients?.phone) {
       followUpGroup.push({
-        label: "Seguimiento",
+        label: "Enviar recordatorio",
         icon: "i-lucide-message-circle",
         color: "primary",
         onSelect: () => followUpViaWhatsApp(props.appointment),
       });
     }
-    followUpGroup.push({
-      label: "Marcar reagendada",
-      icon: "i-lucide-calendar-check",
-      color: "success",
-      onSelect: () => emit("reagendar", props.appointment),
-    });
     menuItems.push(followUpGroup);
   }
   menuItems.push([
@@ -116,10 +127,10 @@ const items = computed<DropdownMenuItem[][]>(() => {
     },
   ]);
 
-  if (status === "CANCELED") {
+  if (canRestore(status)) {
     menuItems.push([
       {
-        label: "Recuperar",
+        label: "Reactivar cita",
         icon: "i-lucide-rotate-ccw",
         color: "success",
         onSelect: () => emit("restore", props.appointment),

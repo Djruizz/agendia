@@ -66,8 +66,15 @@ export const AppointmentStatus = () => {
   const canConfirm = (status: AppointmentWithRelations["status"]) =>
     status === "PENDING";
 
+  const canComplete = (status: AppointmentWithRelations["status"]) =>
+    status === "CONFIRMED";
+
   const canRestore = (status: AppointmentWithRelations["status"]) =>
     status === "CANCELED";
+
+  const canMarkReagendada = (
+    appt: Pick<AppointmentWithRelations, "status" | "followed_up">,
+  ) => appt.status === "COMPLETED" && appt.followed_up === false;
 
   const isReagendada = (
     appt: Pick<AppointmentWithRelations, "status" | "followed_up">,
@@ -98,7 +105,9 @@ export const AppointmentStatus = () => {
     getStatusIcon,
     canCancel,
     canConfirm,
+    canComplete,
     canRestore,
+    canMarkReagendada,
     isReagendada,
     needsFollowUp,
     matchesStatus,

@@ -21,11 +21,17 @@ const {
   getStatusLabel,
   isReagendada,
   needsFollowUp,
+  canCancel,
+  canConfirm,
+  canComplete,
+  canRestore,
+  canMarkReagendada,
 } = AppointmentStatus();
 const { formatDate, formatTime, weeksSince } = useDateUtils();
 const { formatCurrency } = MoneyUtils();
 const { weeksToFollowUp } = useWeeksToFollowUp();
-const { followUpViaWhatsApp } = useAppointmentActions();
+const { followUpViaWhatsApp, sendConfirmationViaWhatsApp } =
+  useAppointmentActions();
 
 const clientName = computed(
   () => props.appointment?.clients?.name || "Sin cliente",
@@ -90,14 +96,14 @@ type NextStatus = {
 
 const nextStatus = computed<NextStatus | null>(() => {
   if (!props.appointment) return null;
-  if (props.appointment.status === "PENDING")
+  if (canConfirm(props.appointment.status))
     return {
       status: "CONFIRMED",
       color: "info",
       icon: "i-lucide-check",
       label: "Confirmar cita",
     };
-  if (props.appointment.status === "CONFIRMED")
+  if (canComplete(props.appointment.status))
     return {
       status: "COMPLETED",
       color: "success",
@@ -121,19 +127,21 @@ type CancelAction = {
 
 const cancelStatus = computed<CancelAction | null>(() => {
   if (!props.appointment) return null;
-  if (props.appointment.status === "COMPLETED") return null;
-  if (props.appointment.status === "CANCELED") {
+  if (canRestore(props.appointment.status)) {
     return {
       label: "Reactivar cita",
       color: "warning",
       icon: "i-lucide-rotate-ccw",
     };
   }
-  return {
-    label: "Cancelar cita",
-    color: "error",
-    icon: "i-lucide-x-circle",
-  };
+  if (canCancel(props.appointment.status)) {
+    return {
+      label: "Cancelar cita",
+      color: "error",
+      icon: "i-lucide-x-circle",
+    };
+  }
+  return null;
 });
 
 function onCancelOrReactivate() {
@@ -154,8 +162,7 @@ type FollowUpAction = {
 
 const markReagendada = computed<FollowUpAction | null>(() => {
   if (!props.appointment) return null;
-  if (props.appointment.status !== "COMPLETED") return null;
-  if (props.appointment.followed_up) return null;
+  if (!canMarkReagendada(props.appointment)) return null;
   return {
     label: "Marcar reagendada",
     color: "success",
@@ -172,6 +179,18 @@ function onMarkReagendada() {
 function onSendReminder() {
   if (!props.appointment) return;
   followUpViaWhatsApp(props.appointment);
+}
+
+const canSendConfirmation = computed(
+  () =>
+    !!props.appointment &&
+    canConfirm(props.appointment.status) &&
+    !!props.appointment.clients?.phone,
+);
+
+function onSendConfirmation() {
+  if (!props.appointment) return;
+  sendConfirmationViaWhatsApp(props.appointment);
 }
 
 function onEdit() {
@@ -366,6 +385,15 @@ function onDelete() {
         size="lg"
         class="w-full flex justify-center"
         @click="onAdvanceStatus"
+      />
+      <UButton
+        v-if="canSendConfirmation"
+        label="Confirmar por WhatsApp"
+        color="success"
+        variant="soft"
+        icon="i-lucide-message-circle"
+        class="w-full flex justify-center"
+        @click="onSendConfirmation"
       />
       <UButton
         v-if="cancelStatus"
