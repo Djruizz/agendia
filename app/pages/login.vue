@@ -3,6 +3,7 @@ import type { AuthFormField, FormSubmitEvent } from "@nuxt/ui";
 import { type LoginSchema, loginSchema } from "~/schemas/auth";
 definePageMeta({
   layout: "auth",
+  middleware: "guest",
 });
 
 const fields: AuthFormField[] = [
@@ -22,6 +23,7 @@ const fields: AuthFormField[] = [
   },
 ];
 const supabase = useSupabaseClient();
+const route = useRoute();
 const toast = useToast();
 const loading = ref(false);
 
@@ -47,7 +49,8 @@ async function onSubmit(event: FormSubmitEvent<LoginSchema>) {
       icon: "i-lucide-circle-check",
       color: "success",
     });
-    return navigateTo("/workspace");
+    const redirect = route.query.redirect as string | undefined;
+    return navigateTo(redirect || "/workspace");
   } finally {
     loading.value = false;
   }
@@ -64,6 +67,21 @@ async function onSubmit(event: FormSubmitEvent<LoginSchema>) {
       :loading="loading"
       @submit="onSubmit"
     >
+      <template #footer>
+        <div class="space-y-2 text-center">
+          <p class="text-sm text-(--ui-text-muted)">
+            <ULink to="/forgot-password" class="text-primary font-medium"
+              >¿Olvidaste tu contraseña?</ULink
+            >
+          </p>
+          <p class="text-sm text-(--ui-text-muted)">
+            ¿No tienes cuenta?
+            <ULink to="/register" class="text-primary font-medium"
+              >Crear cuenta</ULink
+            >
+          </p>
+        </div>
+      </template>
     </UAuthForm>
   </UCard>
 </template>

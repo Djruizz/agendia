@@ -3,13 +3,19 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   if (!user.value) {
     const supabase = useSupabaseClient();
+    let hasSession = false;
     try {
       const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        return navigateTo("/login");
-      }
+      hasSession = !!data.session;
     } catch {
-      return navigateTo("/login");
+      hasSession = false;
+    }
+
+    if (!hasSession) {
+      return navigateTo({
+        path: "/login",
+        query: { redirect: to.fullPath },
+      });
     }
   }
 });

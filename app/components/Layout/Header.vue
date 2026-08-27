@@ -26,7 +26,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
       color: "error",
       onSelect: async () => {
         await supabase.auth.signOut();
-        await navigateTo("/login");
+        await navigateTo("/login", { external: true });
       },
     },
   ],
