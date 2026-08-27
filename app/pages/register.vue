@@ -35,6 +35,60 @@ const supabase = useSupabaseClient();
 const toast = useToast();
 const loading = ref(false);
 const registered = ref(false);
+const registeredEmail = ref("");
+
+const RESEND_COOLDOWN = 60;
+const resendCooldown = ref(0);
+const resendLoading = ref(false);
+let cooldownTimer: ReturnType<typeof setInterval> | null = null;
+
+function startCooldown() {
+  resendCooldown.value = RESEND_COOLDOWN;
+  if (cooldownTimer) clearInterval(cooldownTimer);
+  cooldownTimer = setInterval(() => {
+    resendCooldown.value--;
+    if (resendCooldown.value <= 0 && cooldownTimer) {
+      clearInterval(cooldownTimer);
+      cooldownTimer = null;
+    }
+  }, 1000);
+}
+
+onUnmounted(() => {
+  if (cooldownTimer) clearInterval(cooldownTimer);
+});
+
+async function resendConfirmation() {
+  if (resendCooldown.value > 0 || resendLoading.value || !registeredEmail.value) return;
+  resendLoading.value = true;
+  try {
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: registeredEmail.value,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/confirm`,
+      },
+    });
+    if (error) {
+      toast.add({
+        title: "Error",
+        description: "No se pudo reenviar el correo",
+        icon: "i-lucide-circle-x",
+        color: "error",
+      });
+      return;
+    }
+    toast.add({
+      title: "Correo reenviado",
+      description: "Revisa tu bandeja de entrada y spam",
+      icon: "i-lucide-mail-check",
+      color: "success",
+    });
+    startCooldown();
+  } finally {
+    resendLoading.value = false;
+  }
+}
 
 async function onSubmit(event: FormSubmitEvent<RegisterSchema>) {
   loading.value = true;
@@ -70,6 +124,7 @@ async function onSubmit(event: FormSubmitEvent<RegisterSchema>) {
       return navigateTo("/workspace");
     }
 
+    registeredEmail.value = event.data.email;
     registered.value = true;
   } finally {
     loading.value = false;
@@ -121,6 +176,20 @@ async function onSubmit(event: FormSubmitEvent<RegisterSchema>) {
           block
           label="Ir a iniciar sesión"
           icon="i-lucide-log-in"
+        />
+        <UButton
+          block
+          :label="
+            resendCooldown > 0
+              ? `Reenviar correo (${resendCooldown}s)`
+              : 'Reenviar correo de confirmación'
+          "
+          :icon="resendLoading ? 'i-lucide-loader-circle' : 'i-lucide-refresh-cw'"
+          :loading="resendLoading"
+          :disabled="resendCooldown > 0"
+          color="neutral"
+          variant="outline"
+          @click="resendConfirmation"
         />
       </div>
     </template>
