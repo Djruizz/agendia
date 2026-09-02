@@ -269,6 +269,13 @@ async function copyLink() {
     </SettingsRow>
 
     <SettingsRow
+      label="Color de tu página pública"
+      description="El color con el que se muestra tu página en /p/[slug]."
+    >
+      <SettingsBrandColorSelect />
+    </SettingsRow>
+
+    <SettingsRow
       label="Publicar mi página"
       description="Activa la publicación para que tu página sea visible en /p/[slug]."
     >
@@ -279,17 +286,29 @@ async function copyLink() {
     </SettingsRow>
 
     <SettingsRow
-      label="Copiar enlace público"
-      description="Comparte esta URL con tus clientes."
+      label="Enlace público"
+      description="Tu página en /p/{slug}. Vista previa funciona aunque no esté publicada."
+      wrap
     >
-      <UButton
-        icon="i-lucide-copy"
-        label="Copiar"
-        color="neutral"
-        variant="outline"
-        :disabled="!publicUrl"
-        @click="copyLink"
-      />
+      <div class="flex flex-wrap items-center gap-2">
+        <UButton
+          :to="publicUrl || undefined"
+          target="_blank"
+          icon="i-lucide-external-link"
+          label="Vista previa"
+          color="neutral"
+          variant="outline"
+          :disabled="!publicUrl"
+        />
+        <UButton
+          icon="i-lucide-copy"
+          label="Copiar"
+          color="neutral"
+          variant="outline"
+          :disabled="!publicUrl"
+          @click="copyLink"
+        />
+      </div>
     </SettingsRow>
   </SettingsSection>
 </template>

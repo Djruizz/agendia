@@ -91,7 +91,7 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
   - `composables/Client/` — `queries/`, `mutations/`.
   - `composables/Service/` — `queries/`, `mutations/`.
   - `composables/Dashboard/` — `queries/` agregadas (`useMonthAppointmentCount`, `useMonthRevenue`, `useTotalClients`, `useUpcomingAppointments`).
-  - `composables/Business/` — `queries/` (`useBusinessProfile`), `mutations/` (`useCreateBusinessProfile`, `useUpdateBusinessProfile`), `utils/` (`useSlug.ts`: `generateSlug()` con strip de acentos NFD + `useSlugAvailability()` con debounce), `storage/` (`useUserLogo.ts`: `useUploadLogo`, `useRemoveLogo`, `useLogoPublicUrl`). Las mutaciones usan `setQueryData(["business-profile", user.sub])` en `onSuccess`. `useCreateBusinessProfile` acepta `Omit<BusinessProfileInsert, "user_id">` (la mutación inyecta `user_id`). El dominio `Business/storage/` se usa para el logo de `business_profiles.logo_path` (el antiguo composables/User/storage/ fue renombrado y queda deprecated).
+  - `composables/Business/` — `queries/` (`useBusinessProfile` autenticado, `usePublicBusiness` y `usePublicServices` para `/p/[slug]`), `mutations/` (`useCreateBusinessProfile`, `useUpdateBusinessProfile`), `utils/` (`useSlug.ts`: `generateSlug()` con strip de acentos NFD + `useSlugAvailability()` con debounce), `storage/` (`useUserLogo.ts`: `useUploadLogo`, `useRemoveLogo`, `useLogoPublicUrl`). Las mutaciones usan `setQueryData(["business-profile", user.sub])` en `onSuccess`. `useCreateBusinessProfile` acepta `Omit<BusinessProfileInsert, "user_id">` (la mutación inyecta `user_id`). El dominio `Business/storage/` se usa para el logo de `business_profiles.logo_path` (el antiguo composables/User/storage/ fue renombrado y queda deprecated). `business_profiles` también guarda `brand_color` (color del branding de la página pública — independiente de la preferencia personal `color_theme` de `user_preferences`).
   - `composables/User/` — `queries/` (`useUserPreferences`), `mutations/` (`useUpdateUserPreferences`), `utils/` (`useTimeFormat()`, `useApplyUserPreferences()`). El directorio `storage/` ya no existe aquí (movido a `Business/storage/`).
   - `composables/shared/utils/` — helpers cross-domain: `DateUtils()` (factory pura, no reactiva), `useDateUtils()` (wrapper reactivo con `hour12` desde `useTimeFormat()`), `MoneyUtils()` (currency).
   - **RPC de Postgres**: `is_slug_available(p_slug text)` en `public` (SECURITY DEFINER, expone solo un booleano). Usado por `useSlugAvailability` para chequear disponibilidad de slug en tiempo real (excluye fila propia: `user_id != auth.uid()`). El constraint unique sigue siendo la respuesta definitiva; el mapeo de `23505` en `useCreateBusinessProfile` / `useUpdateBusinessProfile` se mantiene como red de seguridad por condición de carrera. Creada en `supabase/migrations/20260902_is_slug_available.sql`.
@@ -114,6 +114,7 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
 - **`AppointmentCard` click** abre `AppointmentDetailDrawer`, pero **bloquea** la apertura si el cliente está inactivo (`is_active === false`) con un toast de error.
 - **Mutaciones invalidan por queryKey raíz** (ej. `["appointments"]` invalida todas las variantes: list, day, counts). Borrar una cita o servicio refresca también otras vistas automáticamente.
 - **`DateUtils()` es una factory pura** (no reactiva). Para componentes que muestran hora Y deben respetar la preferencia `time_format` del usuario, usar `useDateUtils()` — wrapper que inyecta `hour12` reactivo desde `useTimeFormat()`. `DateUtils()` directo es para composables que no muestran hora (`AppointmentActions` usa `formatDate`, `Calendar` usa `localDayKey`).
+- **Color de la página pública (`/p/[slug]`)**: la página hace snapshot de `appConfig.ui.colors.primary` al montar, aplica `business.brand_color` (validado contra `COLOR_THEMES`) y restaura el valor previo en `onUnmounted`. Aprovecha que el style `:root` de @nuxt/ui es reactivo a `appConfig.ui.colors`. No afecta a `useApplyUserPreferences()` (que solo corre en `layouts/workspace.vue`).
 
 ## Estructura
 
@@ -121,11 +122,12 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
 app/
   app.vue, app.config.ts
   assets/css/main.css
-  layouts/{auth,landing,workspace}.vue
+  layouts/{auth,landing,public,workspace}.vue
   pages/
     index.vue              # landing pública
     login.vue              # UAuthForm + signInWithPassword
     onboarding.vue         # wizard inicial (UStepper 2 pasos: negocio + servicio)
+    p/[slug].vue           # página pública del negocio (Fase 5, acceso anónimo, layout "public")
     workspace/
       index.vue            # dashboard (stub actual)
       clients.vue          # orquesta ClientList + ClientModal + ClientDeleteModal
@@ -135,7 +137,7 @@ app/
       settings.vue         # Perfil negocio + Apariencia + Preferencias + Cuenta/seguridad
   middleware/{auth,onboarding,guest}.ts
   plugins/vue-query.ts     # provee queryClient via nuxt.provide (uso en middleware)
-  components/{Appointment,Client,Service,Calendar,Layout,Home,Settings,Business}/
+  components/{Appointment,Client,Service,Calendar,Layout,Home,Settings,Business,Public}/
   composables/{Appointment,Client,Service,Business,User,Dashboard,shared}/
     cada dominio con queries/, mutations/, utils/, storage/ según aplique
   schemas/{auth,appointments,clients,services,preferences,business}.ts   # Zod
