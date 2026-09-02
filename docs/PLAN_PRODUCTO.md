@@ -203,51 +203,63 @@ create policy "public_read_published" on public.business_profiles
 
 #### Perfil del negocio
 
-- [ ] Editar nombre del negocio.
-- [ ] Editar descripción.
-- [ ] Editar teléfono.
-- [ ] Cambiar logo (integrar `useUploadLogo` / `useRemoveLogo` ya existentes).
-- [ ] Cambiar slug con validación de unicidad.
-- [ ] Activar o desactivar publicación (`is_published`).
-- [ ] Vista previa de la página pública.
-- [ ] Copiar enlace público.
+- [x] Editar nombre del negocio.
+- [x] Editar descripción.
+- [x] Editar teléfono.
+- [x] Cambiar logo (integrar `useUploadLogo` / `useRemoveLogo` ya existentes).
+- [x] Cambiar slug con validación de unicidad (RPC `is_slug_available` excluye fila propia).
+- [x] Activar o desactivar publicación (`is_published`).
+- [ ] Vista previa de la página pública — **diferida a Fase 5** (la ruta `/p/[slug]` aún no existe; abriría un 404).
+- [x] Copiar enlace público.
 
 #### Cuenta y seguridad
 
-- [ ] Mostrar email actual.
-- [ ] Cambiar email (`supabase.auth.updateUser`).
-- [ ] Cambiar contraseña (`supabase.auth.updateUser`).
-- [ ] Cerrar sesión (`supabase.auth.signOut`).
+- [x] Mostrar email actual.
+- [x] Cambiar email (`supabase.auth.updateUser`) — *pendiente validar "Confirm email changes" en el panel de Supabase*.
+- [x] Cambiar contraseña (`supabase.auth.updateUser`).
+- [x] Cerrar sesión (`supabase.auth.signOut`).
 
 #### Preferencias existentes
 
-- [ ] Tema visual (claro/oscuro/sistema) — ya implementado.
-- [ ] Color de la aplicación — ya implementado.
-- [ ] Formato de hora — ya implementado.
-- [ ] Semanas para recordar — ya implementado.
+- [x] Tema visual (claro/oscuro/sistema) — ya implementado.
+- [x] Color de la aplicación — ya implementado.
+- [x] Formato de hora — ya implementado.
+- [x] Semanas para recordar — ya implementado.
 
 #### Zona peligrosa
 
-- [ ] Solicitar eliminación de cuenta.
+- [ ] Solicitar eliminación de cuenta — **diferida post-validación**.
 - [ ] No borrar usuarios directamente desde el navegador.
 - [ ] Usar una Edge Function o endpoint seguro para eliminar la cuenta y sus datos.
 - [ ] Confirmar con contraseña antes de solicitar eliminación.
 
-### Archivos a crear
+> **Por qué se difiere la Zona Peligrosa**: (1) no hay usuarios reales todavía (alineado con §12 — validar primero), (2) `professional_id` en `appointments`/`clients`/`services` **no tiene FK a `auth.users`** → un `auth.admin.deleteUser` no borra en cascada citas/clientes/servicios; requiere cleanup manual en server, (3) introduce Edge Functions + deploy por CLI + manejo de `SUPABASE_SERVICE_ROLE_KEY` como secreto nuevo — un workflow de infraestructura que no existe todavía en el proyecto.
 
-- `app/components/Settings/SettingsBusinessProfile.vue`
-- `app/components/Settings/SettingsAccountSecurity.vue`
-- `app/components/Settings/SettingsDangerZone.vue`
-- `app/components/Settings/SettingsSlugInput.vue`
+### Archivos
+
+- `app/components/Settings/SettingsBusinessProfile.vue` — sección orquestadora (form + logo + slug + publicación + copiar enlace).
+- `app/components/Settings/SettingsSlugInput.vue` — editor de slug autocontenido con `useSlugAvailability` + `useUpdateBusinessProfile`.
+- `app/components/Settings/SettingsAccountSecurity.vue` — email (modal), contraseña (modal), cerrar sesión.
+- `app/composables/Business/storage/useUserLogo.ts` — movido desde `User/storage/` (autoimports por nombre); `useRemoveLogo` perdió la invalidación incorrecta de `["user-preferences"]` — ahora es remoción pura de storage; la cache la maneja el orquestador vía `useUpdateBusinessProfile` (`setQueryData`).
+- `app/schemas/business.ts` — `businessProfileEditSchema = businessSchema.omit({ slug: true })`.
+- `app/schemas/auth.ts` — `changeEmailSchema` + `changePasswordSchema`.
+- `app/pages/workspace/settings.vue` — sección "Perfil del negocio" primero, "Cuenta y seguridad" al final.
+
+### Decisiones
+
+- **Logo: borrar el anterior al subir uno nuevo** (evita huérfanos en `logos/{user_id}/`); la operación es silenciosa (`.catch(() => {})`) porque si falla, el nuevo logo ya está puesto y el huérfano queda — aceptable, no bloquea.
+- **Vista previa pública diferida a Fase 5**: solo se implementa el botón copiar por ahora; el botón "Vista previa" se agregará cuando exista `/p/[slug]`.
+- **Cambio de email**: comportamiento (confirmación automática al nuevo correo) depende del toggle "Confirm email changes" del panel — agregado a las validaciones pendientes como las de Fase 1.
+- **Sin migraciones** en esta fase: todo UI + wiring de composables existentes.
 
 ### Tareas
 
-- [ ] Crear `SettingsBusinessProfile` con formulario de edición.
-- [ ] Crear `SettingsAccountSecurity` con cambio de email y contraseña.
-- [ ] Crear `SettingsDangerZone` con solicitud de eliminación.
-- [ ] Integrar subida de logo real (`useUploadLogo`).
-- [ ] Mostrar vista previa y enlace público.
-- [ ] Añadir secciones a `workspace/settings.vue`.
+- [x] Crear `SettingsBusinessProfile` con formulario de edición.
+- [x] Crear `SettingsAccountSecurity` con cambio de email y contraseña.
+- [ ] `SettingsDangerZone` con solicitud de eliminación — **diferida** (ver Zona peligrosa arriba).
+- [x] Integrar subida de logo real (`useUploadLogo`).
+- [x] Copiar enlace público (vista previa diferida a Fase 5).
+- [x] Añadir secciones a `workspace/settings.vue`.
 
 ## 8. Fase 5: Página pública
 

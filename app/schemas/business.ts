@@ -53,4 +53,7 @@ export const businessSchema = z.object({
   timezone: z.enum(BUSINESS_TIMEZONES).default("America/Mexico_City"),
 });
 
+export const businessProfileEditSchema = businessSchema.omit({ slug: true });
+
 export type BusinessSchema = z.infer<typeof businessSchema>;
+export type BusinessProfileEditSchema = z.infer<typeof businessProfileEditSchema>;

@@ -13,6 +13,7 @@ definePageMeta({
       icon="i-lucide-settings"
     />
     <div class="space-y-4 p-1">
+      <SettingsBusinessProfile />
       <SettingsSection
         icon="i-lucide-palette"
         title="Apariencia"
@@ -49,6 +50,7 @@ definePageMeta({
           <SettingsWeeksFollowUp />
         </SettingsRow>
       </SettingsSection>
+      <SettingsAccountSecurity />
     </div>
   </div>
 </template>

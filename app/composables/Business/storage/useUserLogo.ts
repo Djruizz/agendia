@@ -1,6 +1,4 @@
-// TODO: subida de logo no integrada — persistirá en business_profiles.logo_path (Fase 4, Settings).
-// Ver Header.vue (usa logo estático).
-import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useMutation } from "@tanstack/vue-query";
 
 const ALLOWED_EXTS = ["png", "jpg", "jpeg", "webp", "svg"] as const;
 const MAX_BYTES = 2_000_000;
@@ -34,16 +32,11 @@ export const useUploadLogo = () => {
 
 export const useRemoveLogo = () => {
   const supabase = useSupabaseClient();
-  const queryClient = useQueryClient();
-  const user = useSupabaseUser();
 
   return useMutation({
     mutationFn: async (path: string) => {
       const { error } = await supabase.storage.from("user-assets").remove([path]);
       if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-preferences"] });
     },
   });
 };

@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from "@nuxt/ui";
+import { businessSchema, type BusinessSchema } from "~/schemas/business";
 import {
-  BUSINESS_TIMEZONES,
-  BUSINESS_TIMEZONE_LABELS,
-  businessSchema,
-  type BusinessSchema,
-} from "~/schemas/business";
-import { generateSlug, useSlugAvailability } from "~/composables/Business/utils/useSlug";
+  generateSlug,
+  useSlugAvailability,
+} from "~/composables/Business/utils/useSlug";
 
 const emit = defineEmits<{
   submit: [payload: BusinessSchema];
@@ -32,7 +30,8 @@ const slugRef = computed<string>({
   },
 });
 
-const { data: slugCheck, isFetching: slugChecking } = useSlugAvailability(slugRef);
+const { data: slugCheck, isFetching: slugChecking } =
+  useSlugAvailability(slugRef);
 
 watch(
   () => state.business_name,
@@ -40,11 +39,6 @@ watch(
     if (!slugManuallyEdited.value) state.slug = generateSlug(name);
   },
 );
-
-const timezoneOptions = BUSINESS_TIMEZONES.map((tz) => ({
-  label: BUSINESS_TIMEZONE_LABELS[tz],
-  value: tz,
-}));
 
 const formRef = useTemplateRef<{ clearErrors: () => void }>("formRef");
 
@@ -69,53 +63,13 @@ function onSubmit(event: FormSubmitEvent<BusinessSchema>) {
     :state="state"
     @submit="onSubmit"
   >
-    <div class="space-y-4">
-      <UFormField name="business_name" label="Nombre del negocio" required>
-        <UInput
-          v-model="state.business_name"
-          placeholder="Mi Studio"
-          icon="i-lucide-store"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField name="owner_name" label="Tu nombre">
-        <UInput
-          v-model="state.owner_name"
-          placeholder="Cómo te llamas"
-          icon="i-lucide-user"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField name="category" label="Categoría o tipo de negocio">
-        <UInput
-          v-model="state.category"
-          placeholder="Ej. Barbería, Consultorio, Salón…"
-          icon="i-lucide-tag"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField name="phone" label="Teléfono o WhatsApp">
-        <UInput
-          v-model="state.phone"
-          placeholder="+52 999 123 4567"
-          icon="i-lucide-phone"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField name="timezone" label="Zona horaria" required>
-        <USelect
-          v-model="state.timezone"
-          :items="timezoneOptions"
-          icon="i-lucide-globe"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField name="slug" label="Enlace público" required>
+    <BusinessFormFields :state="state">
+      <UFormField
+        name="slug"
+        label="Enlace público"
+        required
+        class="sm:col-span-2"
+      >
         <UInput
           v-model="slugRef"
           placeholder="mi-studio"
@@ -147,17 +101,6 @@ function onSubmit(event: FormSubmitEvent<BusinessSchema>) {
           </span>
         </template>
       </UFormField>
-
-      <UFormField name="description" label="Descripción">
-        <UTextarea
-          v-model="state.description"
-          placeholder="Una breve descripción de tu negocio"
-          :rows="2"
-          autoresize
-          :maxrows="4"
-          class="w-full"
-        />
-      </UFormField>
-    </div>
+    </BusinessFormFields>
   </UForm>
 </template>
