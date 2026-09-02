@@ -77,6 +77,7 @@ export type Database = {
       business_profiles: {
         Row: {
           business_name: string
+          category: string | null
           created_at: string
           description: string | null
           is_published: boolean
@@ -90,6 +91,7 @@ export type Database = {
         }
         Insert: {
           business_name: string
+          category?: string | null
           created_at?: string
           description?: string | null
           is_published?: boolean
@@ -103,6 +105,7 @@ export type Database = {
         }
         Update: {
           business_name?: string
+          category?: string | null
           created_at?: string
           description?: string | null
           is_published?: boolean
@@ -208,7 +211,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_slug_available: { Args: { p_slug: string }; Returns: boolean }
     }
     Enums: {
       appointment_status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELED"

@@ -24,7 +24,7 @@ export const useUpdateBusinessProfile = () => {
 
       if (error) {
         if (error.code === "23505") {
-          throw new Error("Ese enlace público ya está ocupado, probá con otro.");
+          throw new Error("Ese enlace público ya está ocupado, prueba con otro.");
         }
         throw error;
       }

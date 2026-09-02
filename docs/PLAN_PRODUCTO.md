@@ -157,35 +157,45 @@ create policy "public_read_published" on public.business_profiles
 
 - Nombre del negocio.
 - Nombre del profesional.
-- Categoría o tipo de negocio.
+- Categoría o tipo de negocio (texto libre, opcional — agregado en migración de Fase 2 mini-migración).
 - Teléfono o WhatsApp.
 - Zona horaria.
 - Primer servicio (opcional).
 
 ### Middleware
 
-Crear lógica de protección para evitar que un usuario incompleto acceda al workspace sin haber completado el onboarding:
+**Opción B aplicada**: `app/middleware/onboarding.ts` separado, aplicado en todas las páginas `workspace/*.vue` (`middleware: ["auth", "onboarding"]`). `auth.ts` queda intacto. El middleware lee/escribe la cache de TanStack vía `useNuxtApp().$queryClient` (los composables de vue-query no funcionan dentro de middleware por `inject()` sin instancia).
 
-- Opción A: extender `app/middleware/auth.ts` para verificar `business_profiles` y redirigir a `/onboarding` si no existe.
-- Opción B: crear `app/middleware/onboarding.ts` separado y aplicarlo en `workspace/*.vue`.
+**Regla única**: si no existe fila en `business_profiles` para el usuario → redirigir a `/onboarding` (con `redirect` query param preservado). Esto aplica **uniformemente** a todo usuario sin perfil — no se distingue entre "nuevo" y "existente": el skip del onboarding crea un perfil mínimo y nunca más se le muestra.
 
-### Archivos a crear
+**Falla abierta**: si el select a `business_profiles` falla (red, error), el middleware deja pasar (no bloquear el workspace por un fallo transitorio).
 
-- `app/pages/onboarding.vue`
-- `app/components/Business/BusinessOnboardingForm.vue` (o reutilizar `BusinessForm.vue`)
-- `app/composables/Business/utils/useSlug.ts` — generación y validación de slug.
+### Archivos
+
+- `supabase/migrations/20260902_business_profiles_category.sql` — agregada columna `category text`.
+- `app/middleware/onboarding.ts`
+- `app/pages/onboarding.vue` — layout `auth`, orquestra mutaciones directo (sin Manager: 1 consumidor).
+- `app/components/Business/BusinessOnboardingForm.vue` — presentacional (rol 1), reusa `ServiceForm.vue` para el paso 2.
+- `app/composables/Business/utils/useSlug.ts` — `generateSlug()` (con strip de acentos NFD, crítico para español) + `useSlugAvailability()` con debounce de 500ms.
+
+### Decisiones
+
+- **Skip total = crear perfil mínimo**: `business_name = "Mi negocio"`, `slug = "negocio-<6 chars>"`, timezone default, `is_published = false`. Sin columnas ni flags extra; el usuario completa los datos reales en Fase 4 (settings).
+- **Validación de slug en tiempo real es definitiva vía RPC `is_slug_available` (SECURITY DEFINER)**: la función expone solo un booleano y nunca revela slugs/estado de publicación. `user_id != auth.uid()` deja resuelto el caso de Fase 4 (tu propio slug actual cuenta como libre). El mapeo de `23505` en `useCreateBusinessProfile` se **mantiene** como red de seguridad para condición de carrera (dos usuarios verifican el mismo slug simultáneamente).
+- **Categoría**: texto libre opcional (evita mantener una lista cerrada; normalizable después si Fase 5 lo requiere).
+- **`auth/confirm.vue` no necesita cambios** — ya redirige a `/workspace`; el middleware intercepta.
 
 ### Tareas
 
-- [ ] Crear página `/onboarding` con layout `auth` o `workspace`.
-- [ ] Crear formulario de onboarding (datos del negocio + primer servicio opcional).
-- [ ] Generar slug automático a partir del nombre del negocio.
-- [ ] Validar unicidad de slug en tiempo real.
-- [ ] Crear `business_profiles` al completar onboarding.
-- [ ] Crear primer servicio si el usuario lo ingresó.
-- [ ] Redirigir a `/workspace` al finalizar.
-- [ ] Implementar middleware de onboarding.
-- [ ] Permitir saltar onboarding y completarlo después.
+- [x] Crear página `/onboarding` con layout `auth`.
+- [x] Crear formulario de onboarding (datos del negocio + primer servicio opcional reusando `ServiceForm.vue`).
+- [x] Generar slug automático a partir del nombre del negocio (con strip de acentos).
+- [x] Validar unicidad de slug en tiempo real (debounce 500ms).
+- [x] Crear `business_profiles` al completar onboarding (`useCreateBusinessProfile`).
+- [x] Crear primer servicio si el usuario lo ingresó (`useCreateService` reusado).
+- [x] Redirigir a `/workspace` (o `redirect` query param) al finalizar.
+- [x] Implementar middleware de onboarding (`app/middleware/onboarding.ts`, Opción B).
+- [x] Permitir saltar onboarding: skip total crea perfil mínimo → nunca más se le muestra.
 
 ## 7. Fase 4: Administración de cuenta
 

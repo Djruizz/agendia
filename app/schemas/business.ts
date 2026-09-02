@@ -10,6 +10,18 @@ export const BUSINESS_TIMEZONES = [
   "America/Chihuahua",
 ] as const;
 
+export type BusinessTimezone = (typeof BUSINESS_TIMEZONES)[number];
+
+export const BUSINESS_TIMEZONE_LABELS: Record<BusinessTimezone, string> = {
+  "America/Mexico_City": "Ciudad de México",
+  "America/Cancun": "Cancún",
+  "America/Merida": "Mérida",
+  "America/Monterrey": "Monterrey",
+  "America/Tijuana": "Tijuana",
+  "America/Hermosillo": "Hermosillo",
+  "America/Chihuahua": "Chihuahua",
+};
+
 export const BUSINESS_SLUG_REGEX = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 export const businessSchema = z.object({
@@ -29,6 +41,10 @@ export const businessSchema = z.object({
   description: z
     .string("La descripción es inválida")
     .max(300, "La descripción debe tener menos de 300 caracteres")
+    .optional(),
+  category: z
+    .string("La categoría es inválida")
+    .max(60, "La categoría debe tener menos de 60 caracteres")
     .optional(),
   phone: z
     .string("El teléfono es inválido")
