@@ -30,8 +30,8 @@ export const UserPreferencesSchema = z
     weeks_to_follow_up: z
       .number()
       .int()
-      .min(1)
-      .max(52)
+      .min(1, "Debe ser al menos 1 semana")
+      .max(52, "Debe ser 52 semanas o menos")
       .default(WEEKS_FOR_REMEMBER),
   })
   .strict();

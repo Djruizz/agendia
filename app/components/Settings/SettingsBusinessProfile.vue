@@ -20,16 +20,23 @@ const state = reactive<BusinessProfileEditSchema>({
   timezone: "America/Mexico_City",
 });
 
+function applyProfile(val: NonNullable<typeof profile.value>) {
+  state.business_name = val.business_name;
+  state.owner_name = val.owner_name ?? "";
+  state.description = val.description ?? "";
+  state.category = val.category ?? "";
+  state.phone = val.phone ?? "";
+  state.timezone = val.timezone as BusinessTimezone;
+}
+
+const initialized = ref(false);
+
 watch(
   () => profile.value,
   (val) => {
-    if (!val) return;
-    state.business_name = val.business_name;
-    state.owner_name = val.owner_name ?? "";
-    state.description = val.description ?? "";
-    state.category = val.category ?? "";
-    state.phone = val.phone ?? "";
-    state.timezone = val.timezone as BusinessTimezone;
+    if (!val || initialized.value) return;
+    initialized.value = true;
+    applyProfile(val);
   },
   { immediate: true },
 );
@@ -49,11 +56,9 @@ const isDirty = computed(() =>
   ),
 );
 
-const formRef = useTemplateRef<{ clearErrors: () => void }>("formRef");
-
 async function saveProfile(event: FormSubmitEvent<BusinessProfileEditSchema>) {
   try {
-    await updateProfile.mutateAsync({
+    const data = await updateProfile.mutateAsync({
       business_name: event.data.business_name.trim(),
       owner_name: event.data.owner_name?.trim() || null,
       description: event.data.description?.trim() || null,
@@ -61,6 +66,7 @@ async function saveProfile(event: FormSubmitEvent<BusinessProfileEditSchema>) {
       phone: event.data.phone?.trim() || null,
       timezone: event.data.timezone,
     });
+    applyProfile(data);
     toast.add({
       icon: "i-lucide-check",
       title: "Perfil del negocio actualizado",
@@ -88,8 +94,9 @@ async function onFileChange(event: Event) {
   const file = input.files?.[0];
   if (!file) return;
   const previousPath = profile.value?.logo_path ?? null;
+  let newPath: string | null = null;
   try {
-    const newPath = await uploadLogo.mutateAsync(file);
+    newPath = await uploadLogo.mutateAsync(file);
     await updateProfile.mutateAsync({ logo_path: newPath });
     if (previousPath) {
       await removeLogo.mutateAsync(previousPath).catch(() => {});
@@ -100,6 +107,9 @@ async function onFileChange(event: Event) {
       color: "success",
     });
   } catch (err: any) {
+    if (newPath) {
+      await removeLogo.mutateAsync(newPath).catch(() => {});
+    }
     toast.add({
       icon: "i-lucide-x",
       title: "No se pudo subir el logo",
@@ -233,7 +243,6 @@ async function copyLink() {
     </div>
 
     <UForm
-      ref="formRef"
       :schema="businessProfileEditSchema"
       :state="state"
       @submit="saveProfile"
@@ -261,7 +270,7 @@ async function copyLink() {
 
     <SettingsRow
       label="Publicar mi página"
-      description="Activá la publicación para que tu página sea visible en /p/[slug]."
+      description="Activa la publicación para que tu página sea visible en /p/[slug]."
     >
       <USwitch
         v-model="isPublished"
@@ -271,7 +280,7 @@ async function copyLink() {
 
     <SettingsRow
       label="Copiar enlace público"
-      description="Compartí esta URL con tus clientes."
+      description="Comparte esta URL con tus clientes."
     >
       <UButton
         icon="i-lucide-copy"

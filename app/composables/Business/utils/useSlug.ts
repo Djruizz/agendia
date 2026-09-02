@@ -41,12 +41,13 @@ export function useSlugAvailability(source: Ref<string> | string) {
         BUSINESS_SLUG_REGEX.test(debounced.value) &&
         debounced.value.length >= 3,
     ),
-    queryFn: async (): Promise<{ available: boolean }> => {
+    queryFn: async (): Promise<{ slug: string; available: boolean }> => {
+      const slug = debounced.value;
       const { data, error } = await supabase.rpc("is_slug_available", {
-        p_slug: debounced.value,
+        p_slug: slug,
       });
       if (error) throw error;
-      return { available: !!data };
+      return { slug, available: !!data };
     },
   });
 }

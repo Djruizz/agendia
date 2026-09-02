@@ -33,14 +33,19 @@ const slugRef = computed<string>({
 const { data: slugCheck, isFetching: slugChecking } =
   useSlugAvailability(slugRef);
 
+const slugMatchesCheck = computed(
+  () => slugCheck.value?.slug === state.slug,
+);
+const verifying = computed(
+  () => slugChecking.value || !slugMatchesCheck.value,
+);
+
 watch(
   () => state.business_name,
   (name) => {
     if (!slugManuallyEdited.value) state.slug = generateSlug(name);
   },
 );
-
-const formRef = useTemplateRef<{ clearErrors: () => void }>("formRef");
 
 function onSubmit(event: FormSubmitEvent<BusinessSchema>) {
   emit("submit", {
@@ -58,7 +63,6 @@ function onSubmit(event: FormSubmitEvent<BusinessSchema>) {
 <template>
   <UForm
     id="business-onboarding-form"
-    ref="formRef"
     :schema="businessSchema"
     :state="state"
     @submit="onSubmit"
@@ -79,7 +83,7 @@ function onSubmit(event: FormSubmitEvent<BusinessSchema>) {
         >
           <template #trailing>
             <UIcon
-              v-if="slugChecking"
+              v-if="verifying"
               name="i-lucide-loader-circle"
               class="size-4 animate-spin text-muted"
             />

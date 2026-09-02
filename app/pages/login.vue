@@ -108,13 +108,19 @@ async function onSubmit(event: FormSubmitEvent<LoginSchema>) {
       return;
     }
     toast.add({
-      title: "Success",
-      description: "Login exitoso",
+      title: "Sesión iniciada",
+      description: "Bienvenido de nuevo",
       icon: "i-lucide-circle-check",
       color: "success",
     });
-    const redirect = route.query.redirect as string | undefined;
-    return navigateTo(redirect || "/workspace");
+    const redirect = route.query.redirect;
+    const safeRedirect =
+      typeof redirect === "string" &&
+      redirect.startsWith("/") &&
+      !redirect.startsWith("//")
+        ? redirect
+        : "/workspace";
+    return navigateTo(safeRedirect);
   } finally {
     loading.value = false;
   }

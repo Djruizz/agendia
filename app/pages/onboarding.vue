@@ -18,13 +18,17 @@ const { mutateAsync: createService, isPending: creatingService } =
 
 const step = ref(0);
 const pendingBusiness = ref<BusinessSchema | null>(null);
+const finishing = ref(false);
+const profileCreated = ref(false);
 
 function getRedirect(): string {
   const r = route.query.redirect;
-  return typeof r === "string" && r.startsWith("/") ? r : "/workspace";
+  return typeof r === "string" && r.startsWith("/") && !r.startsWith("//")
+    ? r
+    : "/workspace";
 }
 
-const stepItems = [
+const stepItems = computed(() => [
   {
     slot: "business" as const,
     title: "Tu negocio",
@@ -36,8 +40,15 @@ const stepItems = [
     title: "Primer servicio",
     description: "Opcional",
     icon: "i-lucide-scissors",
+    disabled: !pendingBusiness.value,
   },
-];
+]);
+
+async function ensureProfile() {
+  if (profileCreated.value) return;
+  await createProfile(pendingBusiness.value!);
+  profileCreated.value = true;
+}
 
 async function onBusinessSubmit(payload: BusinessSchema) {
   pendingBusiness.value = payload;
@@ -46,15 +57,18 @@ async function onBusinessSubmit(payload: BusinessSchema) {
 
 async function onServiceSubmit(payload: ServiceSchema) {
   if (!pendingBusiness.value) {
+    finishing.value = true;
     await navigateTo(getRedirect(), { replace: true });
     return;
   }
+  finishing.value = true;
   try {
-    await createProfile(pendingBusiness.value);
+    await ensureProfile();
     await createService(payload);
     pendingBusiness.value = null;
     await navigateTo(getRedirect(), { replace: true });
   } catch (err: any) {
+    finishing.value = false;
     toast.add({
       title: "Error",
       description: err?.message ?? "Ocurrió un error inesperado",
@@ -66,14 +80,17 @@ async function onServiceSubmit(payload: ServiceSchema) {
 
 async function onSkipService() {
   if (!pendingBusiness.value) {
+    finishing.value = true;
     await navigateTo(getRedirect(), { replace: true });
     return;
   }
+  finishing.value = true;
   try {
-    await createProfile(pendingBusiness.value);
+    await ensureProfile();
     pendingBusiness.value = null;
     await navigateTo(getRedirect(), { replace: true });
   } catch (err: any) {
+    finishing.value = false;
     toast.add({
       title: "Error",
       description: err?.message ?? "Ocurrió un error inesperado",
@@ -84,15 +101,17 @@ async function onSkipService() {
 }
 
 async function onSkipAll() {
+  finishing.value = true;
   try {
-    const slug = `negocio-${Math.random().toString(36).slice(2, 8)}`;
     await createProfile({
       business_name: "Mi negocio",
-      slug,
+      slug: `negocio-${Math.random().toString(36).slice(2, 8)}`,
       timezone: "America/Mexico_City",
     });
+    profileCreated.value = true;
     await navigateTo(getRedirect(), { replace: true });
   } catch (err: any) {
+    finishing.value = false;
     toast.add({
       title: "Error",
       description: err?.message ?? "Ocurrió un error inesperado",
@@ -105,7 +124,9 @@ async function onSkipAll() {
 watch(
   () => existing.value,
   (val) => {
-    if (val) navigateTo("/workspace", { replace: true });
+    if (val && !finishing.value) {
+      navigateTo(getRedirect(), { replace: true });
+    }
   },
   { immediate: true },
 );

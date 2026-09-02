@@ -31,7 +31,8 @@ Solo `typecheck` existe como check. No hay ESLint/Prettier ni test runner config
 
 ## Autenticación
 
-- Middleware global en `app/middleware/auth.ts` aplicado en cada `app/pages/workspace/*.vue` vía `definePageMeta({ middleware: "auth" })`.
+- Middleware global en `app/middleware/auth.ts` aplicado en cada `app/pages/workspace/*.vue` vía `definePageMeta({ middleware: ["auth", "onboarding"] })`.
+- `app/middleware/onboarding.ts` chequea `business_profiles` para el usuario; redirige a `/onboarding` (con `?redirect=...`) si no existe perfil. Lee/escribe la cache de TanStack vía `useNuxtApp().$queryClient` (los composables de vue-query no funcionan en middleware — `inject()` sin instancia de componente). El plugin `app/plugins/vue-query.ts` hace `nuxt.provide("queryClient", ...)` para exponerlo.
 - `supabase.redirect = false` en `nuxt.config.ts`: el middleware hace el `navigateTo("/login")` manualmente.
 - Si la sesión no está en storage pero hay usuario en `useSupabaseUser`, se rehidrata vía `supabase.auth.getSession()`.
 
@@ -90,14 +91,16 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
   - `composables/Client/` — `queries/`, `mutations/`.
   - `composables/Service/` — `queries/`, `mutations/`.
   - `composables/Dashboard/` — `queries/` agregadas (`useMonthAppointmentCount`, `useMonthRevenue`, `useTotalClients`, `useUpcomingAppointments`).
-  - `composables/User/` — `queries/` (`useUserPreferences`), `mutations/` (`useUpdateUserPreferences`), `utils/` (`useTimeFormat()`, `useApplyUserPreferences()`), `storage/` (logo — `useUserLogo.ts`, **no implementado aún**, ghost code).
+  - `composables/Business/` — `queries/` (`useBusinessProfile`), `mutations/` (`useCreateBusinessProfile`, `useUpdateBusinessProfile`), `utils/` (`useSlug.ts`: `generateSlug()` con strip de acentos NFD + `useSlugAvailability()` con debounce), `storage/` (`useUserLogo.ts`: `useUploadLogo`, `useRemoveLogo`, `useLogoPublicUrl`). Las mutaciones usan `setQueryData(["business-profile", user.sub])` en `onSuccess`. `useCreateBusinessProfile` acepta `Omit<BusinessProfileInsert, "user_id">` (la mutación inyecta `user_id`). El dominio `Business/storage/` se usa para el logo de `business_profiles.logo_path` (el antiguo composables/User/storage/ fue renombrado y queda deprecated).
+  - `composables/User/` — `queries/` (`useUserPreferences`), `mutations/` (`useUpdateUserPreferences`), `utils/` (`useTimeFormat()`, `useApplyUserPreferences()`). El directorio `storage/` ya no existe aquí (movido a `Business/storage/`).
   - `composables/shared/utils/` — helpers cross-domain: `DateUtils()` (factory pura, no reactiva), `useDateUtils()` (wrapper reactivo con `hour12` desde `useTimeFormat()`), `MoneyUtils()` (currency).
+  - **RPC de Postgres**: `is_slug_available(p_slug text)` en `public` (SECURITY DEFINER, expone solo un booleano). Usado por `useSlugAvailability` para chequear disponibilidad de slug en tiempo real (excluye fila propia: `user_id != auth.uid()`). El constraint unique sigue siendo la respuesta definitiva; el mapeo de `23505` en `useCreateBusinessProfile` / `useUpdateBusinessProfile` se mantiene como red de seguridad por condición de carrera. Creada en `supabase/migrations/20260902_is_slug_available.sql`.
   - Las mutaciones invalidan por queryKey raíz en `onSuccess` (ej. `["appointments"]` invalida list, day, counts).
-  - **Estrategias de cache TanStack**: `setQueryData` en `onSuccess` para mutaciones que conocen el estado final (ej. `useUpdateUserPreferences` hace upsert + `select` y sabe el resultado). `invalidateQueries` para mutaciones que NO conocen el estado final o afectan múltiples queryKeys derivadas (ej. `useRemoveLogo` borra en Storage pero no sabe el nuevo `business_logo_path` → invalida `["user-preferences"]` para refetch). Componentes Settings sin side effects imperativos (ej. `SettingsTimeFormat`) no necesitan rollback en `onError` — la cache no se mutó en error y un `computed` getter auto-revierte el UI. Componentes con side effects imperativos (ej. `SettingsColorSelect` muta `appConfig.ui.colors.primary` optimistic) SÍ requieren rollback explícito en `onError`.
+  - **Estrategias de cache TanStack**: `setQueryData` en `onSuccess` para mutaciones que conocen el estado final (ej. `useUpdateUserPreferences` hace upsert + `select` y sabe el resultado). `invalidateQueries` para mutaciones que NO conocen el estado final o afectan múltiples queryKeys derivadas. Componentes Settings sin side effects imperativos (ej. `SettingsTimeFormat`) no necesitan rollback en `onError` — la cache no se mutó en error y un `computed` getter auto-revierte el UI. Componentes con side effects imperativos (ej. `SettingsColorSelect` muta `appConfig.ui.colors.primary` optimistic) SÍ requieren rollback explícito en `onError`.
 - **`@nuxt/ui` autoimports**: composables (`useToast`, `useSupabaseClient`, `useSupabaseUser`, `useInfiniteQuery`, etc.) están disponibles globalmente — no importarlos manualmente salvo tipos.
 - **`imports.dirs`** en `nuxt.config.ts` incluye `composables/**` y `types/**` para autoimports.
-- **Tipos**: `app/types/database.types.ts` es generado (no editar a mano); wrappers de dominio en `app/types/{appointments,clients,services}.ts`.
-- **Schemas Zod**: `app/schemas/{appointments,clients,services,auth,preferences}.ts`. Los forms usan `UForm :schema="..."` y emiten el payload al modal padre. `preferences.ts` valida `user_preferences.settings` (JSON en DB) con defaults para que `parse({})` no rompa en registro inexistente.
+- **Tipos**: `app/types/database.types.ts` es generado (no editar a mano); wrappers de dominio en `app/types/{appointments,clients,services,business}.ts`. `BusinessProfile` / `Insert` / `Update` derivan de la tabla `business_profiles`.
+- **Schemas Zod**: `app/schemas/{appointments,clients,services,auth,preferences,business}.ts`. Los forms usan `UForm :schema="..."` y emiten el payload al modal padre. `preferences.ts` valida `user_preferences.settings` (JSON en DB) con defaults para que `parse({})` no rompa en registro inexistente. `business.ts` define `businessSchema` (create con slug) y `businessProfileEditSchema = businessSchema.omit({ slug: true })` (edit sin slug — el slug se edita aparte con `SettingsSlugInput`).
 - **i18n hardcoded**: locale (`es-MX`) y currency (`MXN`) viven en `runtimeConfig.public` de `nuxt.config.ts`. `DateUtils` y `MoneyUtils` los leen vía `useRuntimeConfig()`. **No hay sistema i18n** — todo el copy está inline en español.
 - **`professional_id`**: cada insert en `appointments`, `clients`, `services` se le inyecta `user.value?.sub` desde la mutación (server lo autoriza via RLS).
 
@@ -122,20 +125,24 @@ app/
   pages/
     index.vue              # landing pública
     login.vue              # UAuthForm + signInWithPassword
+    onboarding.vue         # wizard inicial (UStepper 2 pasos: negocio + servicio)
     workspace/
       index.vue            # dashboard (stub actual)
       clients.vue          # orquesta ClientList + ClientModal + ClientDeleteModal
       services.vue         # orquesta ServiceList + ServiceModal + ServiceDeleteModal
       appointments.vue     # usa AppointmentManager
       calendar.vue         # Calendar + useAppointmentsByDay + AppointmentManager
-  middleware/auth.ts
-  plugins/vue-query.ts
-  components/{Appointment,Client,Service,Calendar,Layout,Home,Settings}/
-  composables/{Appointment,Client,Service,User,Dashboard,shared}/
+      settings.vue         # Perfil negocio + Apariencia + Preferencias + Cuenta/seguridad
+  middleware/{auth,onboarding,guest}.ts
+  plugins/vue-query.ts     # provee queryClient via nuxt.provide (uso en middleware)
+  components/{Appointment,Client,Service,Calendar,Layout,Home,Settings,Business}/
+  composables/{Appointment,Client,Service,Business,User,Dashboard,shared}/
     cada dominio con queries/, mutations/, utils/, storage/ según aplique
-  schemas/{auth,appointments,clients,services,preferences}.ts   # Zod
-  types/{database.types,appointments,clients,services,preferences}.ts
-supabase/.temp/linked-project.json                  # generado por Supabase CLI
+  schemas/{auth,appointments,clients,services,preferences,business}.ts   # Zod
+  types/{database.types,appointments,clients,services,preferences,business}.ts
+supabase/
+  .temp/linked-project.json                  # generado por Supabase CLI
+  migrations/                                # fuente de verdad para schema de DB
 ```
 
 ## Verificación

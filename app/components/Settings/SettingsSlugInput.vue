@@ -12,10 +12,19 @@ const { data: slugCheck, isFetching: slugChecking } = useSlugAvailability(slug);
 const updateProfile = useUpdateBusinessProfile();
 
 const isDirty = computed(() => slug.value !== props.currentSlug);
+
+const slugMatchesCheck = computed(
+  () => slugCheck.value?.slug === slug.value,
+);
+
+const verifying = computed(
+  () => slugChecking.value || !slugMatchesCheck.value,
+);
+
 const canSave = computed(
   () =>
     isDirty.value &&
-    !slugChecking.value &&
+    !verifying.value &&
     slugCheck.value?.available === true,
 );
 
@@ -58,7 +67,7 @@ async function save() {
       >
         <template #trailing>
           <UIcon
-            v-if="slugChecking"
+            v-if="verifying"
             name="i-lucide-loader-circle"
             class="size-4 animate-spin text-muted"
           />

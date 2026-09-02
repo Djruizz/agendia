@@ -39,6 +39,7 @@ Construir una agenda para profesionales independientes donde cada usuario pueda:
 - Confirmación desde distintos dispositivos.
 - Recuperación de contraseña en producción.
 - Comportamiento con enlaces expirados o ya usados.
+- **Confirmar cambio de email** (toggle "Confirm email changes" en el panel) — el flujo de `SettingsAccountSecurity` depende de esto.
 
 ## 4. Fase 1: Autenticación
 

@@ -18,17 +18,30 @@ const currentEmail = computed(() => user.value?.email ?? "");
 
 const emailState = reactive<ChangeEmailSchema>({ email: "" });
 const emailSubmitting = ref(false);
+const emailFormRef = useTemplateRef<{ clearErrors: () => void }>("emailFormRef");
 
 watch(
   () => emailModalOpen.value,
   (open) => {
-    if (open) emailState.email = currentEmail.value;
+    if (open) {
+      emailState.email = currentEmail.value;
+      emailFormRef.value?.clearErrors();
+    }
   },
 );
 
 async function saveEmail(event: FormSubmitEvent<ChangeEmailSchema>) {
   emailSubmitting.value = true;
   try {
+    if (event.data.email === currentEmail.value) {
+      emailModalOpen.value = false;
+      toast.add({
+        title: "Ese ya es tu email actual",
+        icon: "i-lucide-info",
+        color: "warning",
+      });
+      return;
+    }
     const { error } = await supabase.auth.updateUser({
       email: event.data.email,
     });
@@ -57,6 +70,9 @@ const passwordState = reactive<ChangePasswordSchema>({
   confirmPassword: "",
 });
 const passwordSubmitting = ref(false);
+const passwordFormRef = useTemplateRef<{ clearErrors: () => void }>(
+  "passwordFormRef",
+);
 
 watch(
   () => passwordModalOpen.value,
@@ -64,6 +80,7 @@ watch(
     if (open) {
       passwordState.password = "";
       passwordState.confirmPassword = "";
+      passwordFormRef.value?.clearErrors();
     }
   },
 );
@@ -101,6 +118,8 @@ async function onSignOut() {
     await supabase.auth.signOut();
     await navigateTo("/login", { external: true });
   } catch {
+    // navigateTo external makes the page reload anyway
+  } finally {
     signOutLoading.value = false;
   }
 }
@@ -110,7 +129,7 @@ async function onSignOut() {
   <SettingsSection
     icon="i-lucide-shield"
     title="Cuenta y seguridad"
-    description="Administrá tu email, contraseña y sesión."
+    description="Administra tu email, contraseña y sesión."
   >
     <SettingsRow
       label="Email"
@@ -126,7 +145,7 @@ async function onSignOut() {
 
     <SettingsRow
       label="Contraseña"
-      description="Cambiá tu contraseña periódicamente."
+      description="Cambia tu contraseña periódicamente."
     >
       <UButton
         label="Cambiar"
@@ -138,7 +157,7 @@ async function onSignOut() {
 
     <SettingsRow
       label="Sesión"
-      description="Cerra sesión en este navegador."
+      description="Cierra sesión en este navegador."
     >
       <UButton
         label="Cerrar sesión"
@@ -158,6 +177,7 @@ async function onSignOut() {
       <template #body>
         <UForm
           id="change-email-form"
+          ref="emailFormRef"
           :schema="changeEmailSchema"
           :state="emailState"
           @submit="saveEmail"
@@ -197,6 +217,7 @@ async function onSignOut() {
       <template #body>
         <UForm
           id="change-password-form"
+          ref="passwordFormRef"
           :schema="changePasswordSchema"
           :state="passwordState"
           class="space-y-4"

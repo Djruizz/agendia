@@ -31,7 +31,7 @@ export const useUpdateBusinessProfile = () => {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(["business-profile", user.value?.sub], data);
+      queryClient.setQueryData(["business-profile", user.value!.sub], data);
     },
   });
 };

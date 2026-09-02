@@ -43,10 +43,12 @@ export const useRemoveLogo = () => {
 
 export const useLogoPublicUrl = (path: string | null | Ref<string | null>) => {
   const supabase = useSupabaseClient();
-  const ref = computed(() => (typeof path === "string" ? path : path?.value ?? null));
+  const pathRef = computed(() =>
+    typeof path === "string" ? path : path?.value ?? null,
+  );
 
   return computed(() => {
-    const p = ref.value;
+    const p = pathRef.value;
     if (!p) return null;
     return supabase.storage.from("user-assets").getPublicUrl(p).data.publicUrl;
   });

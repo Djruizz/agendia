@@ -17,7 +17,7 @@ definePageMeta({
       <SettingsSection
         icon="i-lucide-palette"
         title="Apariencia"
-        description="Mejorá la experiencia de uso de la aplicación."
+        description="Mejora la experiencia de uso de la aplicación."
       >
         <SettingsRow
           label="Color de la aplicación"
