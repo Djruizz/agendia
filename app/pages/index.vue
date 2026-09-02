@@ -57,7 +57,7 @@ const features = [
           label="Entrar a la app"
         />
         <UButton
-          to="/login"
+          to="/register"
           size="xl"
           color="neutral"
           variant="outline"

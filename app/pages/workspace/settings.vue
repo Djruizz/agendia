@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   layout: "workspace",
-  middleware: "auth",
+  middleware: ["auth", "onboarding"],
 });
 </script>
 
@@ -13,10 +13,11 @@ definePageMeta({
       icon="i-lucide-settings"
     />
     <div class="space-y-4 p-1">
+      <SettingsBusinessProfile />
       <SettingsSection
         icon="i-lucide-palette"
         title="Apariencia"
-        description="Mejorá la experiencia de uso de la aplicación."
+        description="Mejora la experiencia de uso de la aplicación."
       >
         <SettingsRow
           label="Color de la aplicación"
@@ -49,6 +50,7 @@ definePageMeta({
           <SettingsWeeksFollowUp />
         </SettingsRow>
       </SettingsSection>
+      <SettingsAccountSecurity />
     </div>
   </div>
 </template>

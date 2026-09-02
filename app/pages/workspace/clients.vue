@@ -2,7 +2,7 @@
 import { type Client } from "../../types/clients";
 definePageMeta({
   layout: "workspace",
-  middleware: "auth",
+  middleware: ["auth", "onboarding"],
 });
 const {
   data: paginated,

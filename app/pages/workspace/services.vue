@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   layout: "workspace",
-  middleware: "auth",
+  middleware: ["auth", "onboarding"],
 });
 const { data: services, isFetching, refetch } = useServices();
 

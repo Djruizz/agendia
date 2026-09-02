@@ -1,6 +1,4 @@
-// TODO: business_logo_path no implementado — schema + composables existen pero sin UI ni consumidores.
-// Ver Header.vue (usa logo estático) y SettingsSection si se habilita upload.
-import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useMutation } from "@tanstack/vue-query";
 
 const ALLOWED_EXTS = ["png", "jpg", "jpeg", "webp", "svg"] as const;
 const MAX_BYTES = 2_000_000;
@@ -34,26 +32,23 @@ export const useUploadLogo = () => {
 
 export const useRemoveLogo = () => {
   const supabase = useSupabaseClient();
-  const queryClient = useQueryClient();
-  const user = useSupabaseUser();
 
   return useMutation({
     mutationFn: async (path: string) => {
       const { error } = await supabase.storage.from("user-assets").remove([path]);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-preferences"] });
-    },
   });
 };
 
 export const useLogoPublicUrl = (path: string | null | Ref<string | null>) => {
   const supabase = useSupabaseClient();
-  const ref = computed(() => (typeof path === "string" ? path : path?.value ?? null));
+  const pathRef = computed(() =>
+    typeof path === "string" ? path : path?.value ?? null,
+  );
 
   return computed(() => {
-    const p = ref.value;
+    const p = pathRef.value;
     if (!p) return null;
     return supabase.storage.from("user-assets").getPublicUrl(p).data.publicUrl;
   });
