@@ -64,8 +64,8 @@ Construir una agenda para profesionales independientes donde cada usuario pueda:
 - [x] Cerrar sesión correctamente (Header.vue).
 - [x] Redirigir usuarios autenticados fuera de login y registro.
 - [x] Preservar la ruta original cuando un usuario no autenticado intenta entrar a una ruta protegida (redirect query param).
-- [ ] Validar URLs permitidas en el panel de Supabase.
-- [ ] Validar envío real de emails en producción.
+- [x] Validar URLs permitidas en el panel de Supabase.
+- [x] Validar envío real de emails en producción.
 
 ## 5. Fase 2: Perfil del negocio
 
@@ -108,8 +108,10 @@ create policy "public_read_published" on public.business_profiles
 - `slug` será único y se guardará en minúsculas.
 - No se duplicará la contraseña ni el email en una tabla propia.
 - El email se administrará mediante Supabase Auth.
-- `user_preferences` conservará únicamente preferencias de la aplicación (color, formato de hora, semanas para recordar, logo path).
+- `user_preferences` conservará únicamente preferencias de la aplicación (color, formato de hora, semanas para recordar).
 - `business_profiles` contendrá los datos comerciales del negocio.
+- `logo_path` y `timezone` viven únicamente en `business_profiles`: son datos comerciales y la página pública (Fase 5) necesita leerlos de forma anónima vía la policy `public_read_published`. `user_preferences` es owner-only por RLS y no debe abrirse a lectura pública.
+- `business_logo_path` en `app/schemas/preferences.ts` es ghost code (sin UI ni consumidores) — se elimina en esta fase. `useUploadLogo`/`useRemoveLogo` se integran en Fase 4, persistiendo en `business_profiles.logo_path` (invalidación `["business-profile"]`).
 
 ### Archivos a crear
 
@@ -122,14 +124,16 @@ create policy "public_read_published" on public.business_profiles
 
 ### Tareas
 
-- [ ] Crear migración `business_profiles` con RLS.
-- [ ] Regenerar tipos (`pnpm gen-types`).
-- [ ] Crear tipos del dominio en `app/types/business.ts`.
-- [ ] Crear schema Zod en `app/schemas/business.ts`.
-- [ ] Crear composable `useBusinessProfile` (query por `user_id`).
-- [ ] Crear composable `useCreateBusinessProfile` (insert + upsert slug).
-- [ ] Crear composable `useUpdateBusinessProfile` (update parcial).
-- [ ] Invalidar `["business-profile"]` en mutaciones onSuccess.
+- [x] Crear migración `business_profiles` con RLS (constraint `check` de slug `^[a-z0-9]+(-[a-z0-9]+)*$` max 60, `with check` en policy de update).
+- [x] Incluir limpieza defensiva en la migración: `update user_preferences set settings = settings - 'business_logo_path' where settings ? 'business_logo_path'`.
+- [x] Eliminar `business_logo_path` y `LOGO_PATH_REGEX` de `app/schemas/preferences.ts`.
+- [x] Regenerar tipos (`pnpm gen-types`).
+- [x] Crear tipos del dominio en `app/types/business.ts`.
+- [x] Crear schema Zod en `app/schemas/business.ts`.
+- [x] Crear composable `useBusinessProfile` (query por `user_id`).
+- [x] Crear composable `useCreateBusinessProfile` (insert + upsert slug).
+- [x] Crear composable `useUpdateBusinessProfile` (update parcial).
+- [x] Cache en mutaciones onSuccess: `setQueryData(["business-profile", user_id])` — las mutaciones conocen el estado final (insert/update con `select`). Normalizar slug (lowercase/trim) y mapear error `23505` a mensaje amigable desde la mutación.
 
 ## 6. Fase 3: Onboarding
 

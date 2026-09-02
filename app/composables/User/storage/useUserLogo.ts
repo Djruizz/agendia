@@ -1,5 +1,5 @@
-// TODO: business_logo_path no implementado — schema + composables existen pero sin UI ni consumidores.
-// Ver Header.vue (usa logo estático) y SettingsSection si se habilita upload.
+// TODO: subida de logo no integrada — persistirá en business_profiles.logo_path (Fase 4, Settings).
+// Ver Header.vue (usa logo estático).
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 
 const ALLOWED_EXTS = ["png", "jpg", "jpeg", "webp", "svg"] as const;

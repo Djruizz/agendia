@@ -23,8 +23,6 @@ export const COLOR_THEMES = [
 
 export const TIME_FORMATS = ["12h", "24h"] as const;
 
-export const LOGO_PATH_REGEX = /^logos\/[a-f0-9-]{36}\/logo-[a-z0-9_-]+\.(png|jpg|jpeg|webp|svg)$/i;
-
 export const UserPreferencesSchema = z
   .object({
     color_theme: z.enum(COLOR_THEMES).default("pink"),
@@ -35,11 +33,6 @@ export const UserPreferencesSchema = z
       .min(1)
       .max(52)
       .default(WEEKS_FOR_REMEMBER),
-    business_logo_path: z
-      .string()
-      .regex(LOGO_PATH_REGEX, "Path de logo inválido")
-      .nullable()
-      .default(null),
   })
   .strict();
 
