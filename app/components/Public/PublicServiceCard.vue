@@ -20,13 +20,13 @@ const formattedPrice = computed(() =>
 
 <template>
   <UCard variant="subtle" :ui="{ body: 'p-4' }" class="overflow-hidden w-full">
-    <template #header>
+    <!-- <template #header>
       <img
         :src="`https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80`"
         class="w-full h-48 object-cover rounded-lg"
         alt=""
       />
-    </template>
+    </template> -->
     <div class="space-y-1.5">
       <p class="font-semibold text-highlighted">
         {{ service.name }}
