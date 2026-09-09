@@ -12,10 +12,21 @@ export const MoneyUtils = (opts: MoneyUtilsOptions = {}) => {
     currency,
   });
 
+  const compactFormatter = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    notation: "compact",
+    maximumFractionDigits: 1,
+  });
+
   const formatCurrency = (value: number | null | undefined) =>
     formatter.format(value ?? 0);
 
+  const formatCurrencyCompact = (value: number | null | undefined) =>
+    compactFormatter.format(value ?? 0);
+
   return {
     formatCurrency,
+    formatCurrencyCompact,
   };
 };

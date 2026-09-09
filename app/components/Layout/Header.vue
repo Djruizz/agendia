@@ -45,14 +45,26 @@ const items = computed<DropdownMenuItem[][]>(() => [
       </div>
     </template>
     <template #right>
-      <UDropdownMenu :items="items" :ui="{ content: 'min-w-48' }">
-        <UButton
-          icon="i-lucide-settings"
-          color="neutral"
-          variant="ghost"
-          class="cursor-pointer"
-        />
-      </UDropdownMenu>
+      <div class="flex items-center gap-1">
+        <UTooltip text="Ganancias">
+          <UButton
+            to="/workspace/earnings"
+            icon="i-lucide-wallet"
+            color="neutral"
+            variant="ghost"
+            aria-label="Ganancias"
+            class="cursor-pointer"
+          />
+        </UTooltip>
+        <UDropdownMenu :items="items" :ui="{ content: 'min-w-48' }">
+          <UButton
+            icon="i-lucide-settings"
+            color="neutral"
+            variant="ghost"
+            class="cursor-pointer"
+          />
+        </UDropdownMenu>
+      </div>
     </template>
   </UHeader>
 </template>

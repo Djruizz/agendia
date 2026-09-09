@@ -32,13 +32,16 @@ const monthLabel = computed(() =>
         :year="year"
         :month="month"
         :label="`Ganancias en ${monthLabel}`"
-      />
+        class="cursor-pointer"
+        @click="navigateTo('/workspace/earnings')"
+      ></HomeRevenueCard>
       <HomeStatCard
         icon="i-lucide-calendar-check"
         icon-bg-class="bg-primary/10"
         icon-color-class="text-primary"
         :label="`Citas en ${monthLabel}`"
         :loading="monthCountLoading"
+        class="cursor-pointer"
         @click="navigateTo('/workspace/calendar')"
       >
         <template #value>
@@ -55,6 +58,7 @@ const monthLabel = computed(() =>
         icon-color-class="text-info"
         label="Clientes totales"
         :loading="clientsLoading"
+        class="cursor-pointer"
         @click="navigateTo('/workspace/clients')"
       >
         <template #value>
