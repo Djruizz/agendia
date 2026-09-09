@@ -76,6 +76,7 @@ export type Database = {
       }
       business_profiles: {
         Row: {
+          brand_color: string | null
           business_name: string
           category: string | null
           created_at: string
@@ -90,6 +91,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          brand_color?: string | null
           business_name: string
           category?: string | null
           created_at?: string
@@ -104,6 +106,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          brand_color?: string | null
           business_name?: string
           category?: string | null
           created_at?: string

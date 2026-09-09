@@ -9,12 +9,14 @@ const props = withDefaults(
     pctLabel?: string;
     prefix?: "" | "+" | "-";
     sublabel?: string;
+    noneLabel?: string;
   }>(),
   {
     loading: false,
     pctLabel: undefined,
     prefix: "",
     sublabel: "vs mes anterior",
+    noneLabel: "Sin datos del mes anterior",
   },
 );
 
@@ -61,7 +63,7 @@ const showData = computed(() => props.trend !== "none");
   <template v-else-if="!showData">
     <div class="flex items-center gap-1.5">
       <UIcon name="i-lucide-minus" class="size-3.5 text-dimmed shrink-0" />
-      <p class="text-xs text-dimmed">Sin datos del mes anterior</p>
+      <p class="text-xs text-dimmed">{{ noneLabel }}</p>
     </div>
   </template>
   <div v-else class="flex items-center gap-1.5 min-w-0">
@@ -72,8 +74,11 @@ const showData = computed(() => props.trend !== "none");
       <UIcon :name="iconName" class="size-3" :class="textColorClass" />
     </div>
     <p class="text-xs font-medium truncate" :class="textColorClass">
-      {{ prefix }}{{ amountLabel }}<template v-if="pctLabel"> ({{ pctLabel }})</template>
+      {{ prefix }}{{ amountLabel
+      }}<template v-if="pctLabel"> ({{ pctLabel }})</template>
     </p>
-    <span v-if="sublabel" class="text-xs text-dimmed shrink-0">{{ sublabel }}</span>
+    <span v-if="sublabel" class="text-xs text-dimmed shrink-0">{{
+      sublabel
+    }}</span>
   </div>
 </template>

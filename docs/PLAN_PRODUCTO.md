@@ -210,7 +210,7 @@ create policy "public_read_published" on public.business_profiles
 - [x] Cambiar logo (integrar `useUploadLogo` / `useRemoveLogo` ya existentes).
 - [x] Cambiar slug con validación de unicidad (RPC `is_slug_available` excluye fila propia).
 - [x] Activar o desactivar publicación (`is_published`).
-- [ ] Vista previa de la página pública — **diferida a Fase 5** (la ruta `/p/[slug]` aún no existe; abriría un 404).
+- [x] Vista previa de la página pública — implementada junto con Fase 5.
 - [x] Copiar enlace público.
 
 #### Cuenta y seguridad
@@ -275,6 +275,7 @@ create policy "public_read_published" on public.business_profiles
 - Nombre del negocio.
 - Descripción.
 - Logo.
+- Color de marca de la página (campo `business_profiles.brand_color`, independiente de la preferencia personal de color).
 - Servicios activos (`is_active = true`).
 - Precio y duración de cada servicio.
 - Teléfono o WhatsApp.
@@ -303,14 +304,26 @@ create policy "public_read_published" on public.business_profiles
 
 ### Tareas
 
-- [ ] Crear layout `public.vue` (header mínimo, sin navegación de workspace).
-- [ ] Crear página `/p/[slug]` con datos del negocio y servicios.
-- [ ] Crear query pública `usePublicBusiness` (por slug).
-- [ ] Crear query pública `usePublicServices` (por `professional_id` del negocio).
-- [ ] Crear componentes presentacionales públicos.
-- [ ] Manejar estado de negocio no encontrado o no publicado.
-- [ ] Botón de contacto por WhatsApp.
-- [ ] Diseño responsive y mobile-first.
+- [x] Crear layout `public.vue` (header mínimo, sin navegación de workspace).
+- [x] Crear página `/p/[slug]` con datos del negocio y servicios.
+- [x] Crear query pública `usePublicBusiness` (por slug).
+- [x] Crear query pública `usePublicServices` (por `professional_id` del negocio).
+- [x] Crear componentes presentacionales públicos.
+- [x] Manejar estado de negocio no encontrado o no publicado.
+- [x] Botón de contacto por WhatsApp.
+- [x] Diseño responsive y mobile-first.
+
+### Decisiones
+
+- **Acceso para el dueño pre-publicación**: `usePublicBusiness` no filtra `is_published` — la RLS decide: anon recibe `null` si el negocio no está publicado; el **dueño logueado sí ve su propio perfil** aunque esté en borrador → el botón "Vista previa" funciona antes de activar la publicación. Sin código condicional en el cliente.
+- **Policy de services** (`20260902_services_public_read.sql`): `for select using (is_active = true and exists (select 1 from business_profiles where user_id = services.professional_id and is_published = true))`. El subquery en la policy corre con privilegios del owner → bypassa RLS de `business_profiles`, sin recursión. Es OR con la policy propia del dueño → no la afecta.
+- **Estado "no disponible"** inline (no 404 duro): mantiene el layout público + link a la landing. Más amigable y consistente con el SPA.
+- **Sección de servicios**: oculta si no hay activos (header + contacto siguen siendo útiles).
+- **WhatsApp**: `https://wa.me/<digits>?text=Hola {nombre del negocio}, me interesa agendar una cita.` Teléfono sanitizado (solo dígitos). Botón solo se muestra si hay teléfono.
+- **Footer "Hecho con Agendia"**: marketing gratuito cuando los profesionales comparten su página.
+- **`useSeoMeta`** reactivo: title/description/og con datos del negocio.
+- **Sin migraciones de schema** en esta fase — solo policies (no afectan tipos generados → no requiere `pnpm gen-types`).
+- **Color de marca** (`brand_color` en `business_profiles`): el color del branding de la página pública vive como dato comercial del negocio, no como preferencia personal. La columna se expone automáticamente por la policy `public_read_published` existente. La siembra inicial del campo hereda el `color_theme` actual del dueño (si es válido) para que la primera elección del usuario quede como color de su página. Se aplica al `appConfig.ui.colors.primary` en runtime con snapshot al montar la página y restauración en `onUnmounted` (mismo mecanismo reactivo que `SettingsColorSelect`) — solo afecta la vista de la página pública.
 
 ## 9. Fase 6: Reservas online
 

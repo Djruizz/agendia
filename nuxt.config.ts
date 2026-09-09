@@ -20,6 +20,20 @@ export default defineNuxtConfig({
     head: {
       link: [
         {
+          rel: "icon",
+          type: "image/png",
+          href: "/agendia-no-bg.png",
+        },
+        {
+          rel: "shortcut icon",
+          type: "image/png",
+          href: "/agendia-no-bg.png",
+        },
+        {
+          rel: "apple-touch-icon",
+          href: "/icon-192x192.png",
+        },
+        {
           rel: "manifest",
           href: "/manifest.webmanifest",
         },

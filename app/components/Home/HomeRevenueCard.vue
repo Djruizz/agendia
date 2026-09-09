@@ -60,7 +60,7 @@ const comparisonLoading = computed(
 </script>
 
 <template>
-<HomeStatCard
+  <HomeStatCard
     icon="i-lucide-dollar-sign"
     icon-bg-class="bg-success/10"
     icon-color-class="text-success"
@@ -68,10 +68,20 @@ const comparisonLoading = computed(
     :loading="currentLoading"
   >
     <template #value>
-      <USkeleton v-if="currentLoading" class="h-7 w-24" />
-      <p v-else class="text-2xl font-bold text-highlighted">
-        {{ formattedAmount }}
-      </p>
+      <div class="flex items-center gap-2 justify-between">
+        <USkeleton v-if="currentLoading" class="h-7 w-24" />
+        <p v-else class="text-2xl font-bold text-highlighted">
+          {{ formattedAmount }}
+        </p>
+        <UButton
+          color="primary"
+          variant="link"
+          size="sm"
+          icon="i-lucide-chevron-right"
+          aria-label="Ver ganancias"
+          @click="navigateTo('/workspace/earnings')"
+        />
+      </div>
     </template>
     <template #footer>
       <HomeRevenueComparisonIndicator
