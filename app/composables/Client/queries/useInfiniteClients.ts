@@ -7,15 +7,17 @@ export const useInfiniteClients = () => {
   const sortOrder = ref<"asc" | "desc">("asc");
 
   const supabase = useSupabaseClient();
+  const user = useSupabaseUser();
 
   const fetchClients = async ({ pageParam = 0 }: { pageParam?: number }) => {
     const from = pageParam * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
-    let query = supabase
-      .from("clients")
-      .select("*")
-      .eq("is_active", true)
+      let query = supabase
+        .from("clients")
+        .select("*")
+        .eq("professional_id", user.value!.sub)
+        .eq("is_active", true)
       .order("name", { ascending: sortOrder.value === "asc" })
       .range(from, to);
 
@@ -32,6 +34,7 @@ export const useInfiniteClients = () => {
 
   const queryKey = computed(() => [
     "clients",
+    user.value?.sub,
     searchTerm.value,
     sortOrder.value,
   ]);

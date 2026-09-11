@@ -21,6 +21,7 @@ const buildPseudoQuery = (
 
 export const useInfiniteAppointments = () => {
   const supabase = useSupabaseClient();
+  const user = useSupabaseUser();
   const statusFilter = ref<AppointmentStatusFilter>("ALL");
   const { weeksToFollowUp } = useWeeksToFollowUp();
 
@@ -35,6 +36,7 @@ export const useInfiniteAppointments = () => {
     let query = supabase
       .from("appointments")
       .select("*, clients:clients(*), services:services(*)")
+      .eq("professional_id", user.value!.sub)
       .order("date", { ascending: false })
       .range(from, to);
 
@@ -55,6 +57,7 @@ export const useInfiniteAppointments = () => {
   const queryKey = computed(() => [
     "appointments",
     "list",
+    user.value?.sub,
     statusFilter.value,
     weeksToFollowUp.value,
   ]);
