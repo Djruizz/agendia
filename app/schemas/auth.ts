@@ -14,6 +14,9 @@ export const registerSchema = z
       .string("Contraseña inválida")
       .min(8, "La contraseña debe tener al menos 8 caracteres"),
     confirmPassword: z.string("Confirma tu contraseña"),
+    terms: z.boolean().refine((v) => v === true, {
+      message: "Debes aceptar los Términos y el Aviso de privacidad",
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],

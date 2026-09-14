@@ -96,9 +96,21 @@ const features = [
     <div
       class="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3"
     >
-      <p class="text-sm text-(--ui-text-muted)">
-        © {{ new Date().getFullYear() }} Agendia
-      </p>
+      <div class="flex items-center gap-4">
+        <p class="text-sm text-(--ui-text-muted)">
+          © {{ new Date().getFullYear() }} Agendia
+        </p>
+        <ULink
+          to="/terminos"
+          class="text-sm text-(--ui-text-muted) hover:text-(--ui-text)"
+          >Términos</ULink
+        >
+        <ULink
+          to="/privacidad"
+          class="text-sm text-(--ui-text-muted) hover:text-(--ui-text)"
+          >Privacidad</ULink
+        >
+      </div>
       <UButton
         to="/workspace"
         variant="ghost"

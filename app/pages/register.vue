@@ -29,6 +29,11 @@ const fields: AuthFormField[] = [
     placeholder: "********",
     required: true,
   },
+  {
+    name: "terms",
+    type: "checkbox",
+    defaultValue: false,
+  },
 ];
 
 const supabase = useSupabaseClient();
@@ -59,7 +64,8 @@ onUnmounted(() => {
 });
 
 async function resendConfirmation() {
-  if (resendCooldown.value > 0 || resendLoading.value || !registeredEmail.value) return;
+  if (resendCooldown.value > 0 || resendLoading.value || !registeredEmail.value)
+    return;
   resendLoading.value = true;
   try {
     const { error } = await supabase.auth.resend({
@@ -98,16 +104,17 @@ async function onSubmit(event: FormSubmitEvent<RegisterSchema>) {
       password: event.data.password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        data: {
+          accepted_terms_at: new Date().toISOString(),
+          terms_version: SITE.termsVersion,
+        },
       },
     });
 
     if (error) {
       toast.add({
         title: "Error",
-        description:
-          error.message.includes("already")
-            ? "Ya existe una cuenta con este email"
-            : "No se pudo crear la cuenta",
+        description: "No se pudo crear la cuenta",
         icon: "i-lucide-circle-x",
         color: "error",
       });
@@ -144,8 +151,30 @@ async function onSubmit(event: FormSubmitEvent<RegisterSchema>) {
         :loading="loading"
         @submit="onSubmit"
       >
+        <template #terms-field="{ state }">
+          <UCheckbox v-model="state.terms" class="mt-2">
+            <template #label>
+              <span class="text-sm text-muted">
+                Acepto los
+                <ULink
+                  to="/terminos"
+                  class="text-primary font-medium"
+                  inactive-class="text-primary"
+                  >Términos de uso</ULink
+                >
+                y el
+                <ULink
+                  to="/privacidad"
+                  class="text-primary font-medium"
+                  inactive-class="text-primary"
+                  >Aviso de privacidad</ULink
+                >
+              </span>
+            </template>
+          </UCheckbox>
+        </template>
         <template #footer>
-          <p class="text-sm text-(--ui-text-muted) text-center">
+          <p class="text-sm text-muted text-center">
             ¿Ya tienes cuenta?
             <ULink to="/login" class="text-primary font-medium"
               >Inicia sesión</ULink
@@ -163,10 +192,8 @@ async function onSubmit(event: FormSubmitEvent<RegisterSchema>) {
           <UIcon name="i-lucide-mail-check" class="size-7" />
         </div>
         <div class="space-y-1">
-          <h2 class="text-lg font-semibold text-(--ui-text)">
-            Revisa tu correo
-          </h2>
-          <p class="text-sm text-(--ui-text-muted)">
+          <h2 class="text-lg font-semibold text-default">Revisa tu correo</h2>
+          <p class="text-sm text-muted">
             Te enviamos un enlace de confirmación. Haz clic en él para activar
             tu cuenta y empezar a usar Agendia.
           </p>
@@ -184,7 +211,9 @@ async function onSubmit(event: FormSubmitEvent<RegisterSchema>) {
               ? `Reenviar correo (${resendCooldown}s)`
               : 'Reenviar correo de confirmación'
           "
-          :icon="resendLoading ? 'i-lucide-loader-circle' : 'i-lucide-refresh-cw'"
+          :icon="
+            resendLoading ? 'i-lucide-loader-circle' : 'i-lucide-refresh-cw'
+          "
           :loading="resendLoading"
           :disabled="resendCooldown > 0"
           color="neutral"

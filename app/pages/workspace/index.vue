@@ -27,6 +27,8 @@ const monthLabel = computed(() =>
       icon="i-lucide-home"
     />
 
+    <HomeActivationChecklist />
+
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-1">
       <HomeRevenueCard
         :year="year"
