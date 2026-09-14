@@ -76,11 +76,12 @@ async function resendConfirmation() {
       },
     });
     if (error) {
+      const feedback = describeAuthError(error);
       toast.add({
-        title: "Error",
-        description: "No se pudo reenviar el correo",
-        icon: "i-lucide-circle-x",
-        color: "error",
+        title: feedback.title,
+        description: feedback.description,
+        icon: feedback.icon,
+        color: feedback.color,
       });
       return;
     }
@@ -112,11 +113,12 @@ async function onSubmit(event: FormSubmitEvent<RegisterSchema>) {
     });
 
     if (error) {
+      const feedback = describeAuthError(error);
       toast.add({
-        title: "Error",
-        description: "No se pudo crear la cuenta",
-        icon: "i-lucide-circle-x",
-        color: "error",
+        title: feedback.title,
+        description: feedback.description,
+        icon: feedback.icon,
+        color: feedback.color,
       });
       return;
     }

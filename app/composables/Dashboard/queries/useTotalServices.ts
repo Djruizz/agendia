@@ -11,7 +11,8 @@ export const useTotalServices = () => {
       const { count, error } = await supabase
         .from("services")
         .select("id", { count: "exact", head: true })
-        .eq("professional_id", user.value!.sub);
+        .eq("professional_id", user.value!.sub)
+        .eq("is_active", true);
 
       if (error) throw error;
       return count ?? 0;

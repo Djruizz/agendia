@@ -8,7 +8,7 @@ export const useDeleteService = () => {
     mutationFn: async (id: string) => {
       const { data: rows, error } = await supabase
         .from("services")
-        .delete()
+        .update({ is_active: false })
         .eq("id", id)
         .eq("professional_id", user.value!.sub)
         .select("id");
@@ -18,6 +18,7 @@ export const useDeleteService = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["public-services"] });
     },
   });
 };

@@ -9,6 +9,7 @@ const {
   hasNextPage,
   isFetchingNextPage,
   isFetching,
+  isError,
   statusFilter,
   refetch,
   fetchNextPage,
@@ -53,7 +54,14 @@ const onCreate = () => {
       </template>
     </LayoutPageHeader>
 
+    <AppQueryErrorState
+      v-if="isError"
+      title="No pudimos cargar tus citas"
+      @retry="refetch()"
+    />
+
     <AppointmentManager
+      v-else
       ref="managerRef"
       v-model:status-filter="statusFilter"
       :appointments="appointmentsList"

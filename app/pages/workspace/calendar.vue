@@ -24,8 +24,12 @@ const statusFilter = ref<AppointmentStatusFilter>("ALL");
 
 const { data: counts } = useAppointmentCounts(year, month);
 
-const { data: dayAppointments, isFetching: dayFetching } =
-  useAppointmentsByDay(selectedDate);
+const {
+  data: dayAppointments,
+  isFetching: dayFetching,
+  isError: dayError,
+  refetch: refetchDay,
+} = useAppointmentsByDay(selectedDate);
 
 const { matchesStatus } = AppointmentStatus();
 const { weeksToFollowUp } = useWeeksToFollowUp();
@@ -88,7 +92,15 @@ const onCreate = () => {
       class="mb-6 mx-auto"
     />
 
+    <AppQueryErrorState
+      v-if="dayError"
+      compact
+      title="No pudimos cargar las citas de este día"
+      @retry="refetchDay()"
+    />
+
     <AppointmentManager
+      v-else
       ref="managerRef"
       v-model:status-filter="statusFilter"
       :appointments="filteredAppointments"

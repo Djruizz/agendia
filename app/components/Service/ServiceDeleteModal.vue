@@ -13,8 +13,8 @@ async function onConfirm() {
   try {
     await deleteService(props.service.id);
     toast.add({
-      title: "Servicio eliminado",
-      description: `${props.service.name} fue eliminado`,
+      title: "Servicio desactivado",
+      description: `${props.service.name} fue desactivado`,
       color: "success",
       icon: "i-lucide-check-circle",
     });
@@ -49,8 +49,8 @@ async function onConfirm() {
             ¿Estás seguro de eliminar este servicio?
           </p>
           <p class="text-sm text-muted max-w-sm">
-            Esta acción eliminará el servicio permanentemente. No se puede
-            deshacer.
+            El servicio se desactivará y dejará de aparecer en tu lista y en tu
+            página pública. Las citas históricas conservarán su información.
           </p>
         </div>
 

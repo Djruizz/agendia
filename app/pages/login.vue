@@ -65,11 +65,12 @@ async function resendConfirmation() {
       },
     });
     if (error) {
+      const feedback = describeAuthError(error);
       toast.add({
-        title: "Error",
-        description: "No se pudo reenviar el correo",
-        icon: "i-lucide-circle-x",
-        color: "error",
+        title: feedback.title,
+        description: feedback.description,
+        icon: feedback.icon,
+        color: feedback.color,
       });
       return;
     }
@@ -94,24 +95,15 @@ async function onSubmit(event: FormSubmitEvent<LoginSchema>) {
       password: event.data.password,
     });
     if (error) {
-      if (
-        error.message.includes("not confirmed") ||
-        error.message.includes("Email not confirmed")
-      ) {
+      const feedback = describeAuthError(error);
+      if (feedback.code === "email-not-confirmed") {
         unconfirmedEmail.value = event.data.email;
-        toast.add({
-          title: "Email no confirmado",
-          description: "Confirma tu correo antes de iniciar sesión",
-          icon: "i-lucide-mail-warning",
-          color: "warning",
-        });
-        return;
       }
       toast.add({
-        title: "Error",
-        description: "Credenciales inválidas",
-        icon: "i-lucide-circle-x",
-        color: "error",
+        title: feedback.title,
+        description: feedback.description,
+        icon: feedback.icon,
+        color: feedback.color,
       });
       return;
     }

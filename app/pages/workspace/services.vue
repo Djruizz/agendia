@@ -3,7 +3,7 @@ definePageMeta({
   layout: "workspace",
   middleware: ["auth", "onboarding"],
 });
-const { data: services, isFetching, refetch } = useServices();
+const { data: services, isFetching, isError, refetch } = useServices();
 
 const openModal = ref(false);
 const serviceToEdit = ref<Service | null>(null);
@@ -40,7 +40,13 @@ function openDeleteModalFn(service: Service) {
         <UButton icon="i-lucide-plus" size="lg" @click="openModalFn()" />
       </template>
     </LayoutPageHeader>
+    <AppQueryErrorState
+      v-if="isError"
+      title="No pudimos cargar tus servicios"
+      @retry="refetch()"
+    />
     <ServiceList
+      v-else
       :services="services || []"
       :loading="isFetching"
       @edit="openModalFn"

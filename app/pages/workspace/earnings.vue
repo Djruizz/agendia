@@ -19,7 +19,8 @@ const year = ref(now.getFullYear());
 const month = ref(now.getMonth() + 1);
 const day = ref(now.getDate());
 
-const { data: dataset, isFetching: loading } = useEarningsDataset();
+const { data: dataset, isFetching: loading, isError, refetch } =
+  useEarningsDataset();
 const rows = computed<EarningsRow[]>(() => dataset.value ?? []);
 
 const currentRange = computed(() =>
@@ -178,8 +179,12 @@ watch(
   { immediate: true },
 );
 
-const { data: dayAppointments, isFetching: dayLoading } =
-  useAppointmentsByDay(selectedDayKey);
+const {
+  data: dayAppointments,
+  isFetching: dayLoading,
+  isError: dayError,
+  refetch: refetchDay,
+} = useAppointmentsByDay(selectedDayKey);
 
 const completedDayAppointments = computed(() =>
   (dayAppointments.value ?? []).filter(
@@ -196,35 +201,49 @@ const completedDayAppointments = computed(() =>
       icon="i-lucide-wallet"
     />
 
-    <EarningsPeriodSwitcher
-      v-model:granularity="granularity"
-      :label="periodLabel"
-      :can-next="canNext"
-      @prev="shift(-1)"
-      @next="shift(1)"
+    <AppQueryErrorState
+      v-if="isError"
+      title="No pudimos cargar tus ganancias"
+      @retry="refetch()"
     />
 
-    <EarningsSummaryCards
-      :loading="loading"
-      :total="summary.total"
-      :previous-total="previousTotal"
-      :count="summary.count"
-      :avg="summary.avg"
-      :comparison-label="comparisonLabel"
-      :none-label="noneLabel"
-      :highlight="highlight"
-    />
+    <template v-else>
+      <EarningsPeriodSwitcher
+        v-model:granularity="granularity"
+        :label="periodLabel"
+        :can-next="canNext"
+        @prev="shift(-1)"
+        @next="shift(1)"
+      />
 
-    <EarningsDayList
-      v-if="granularity === 'DAY'"
-      :appointments="completedDayAppointments"
-      :loading="dayLoading"
-    />
-    <EarningsBarChart
-      v-else
-      :buckets="chartBuckets"
-      :period-key="periodKey"
-      :loading="loading"
-    />
+      <EarningsSummaryCards
+        :loading="loading"
+        :total="summary.total"
+        :previous-total="previousTotal"
+        :count="summary.count"
+        :avg="summary.avg"
+        :comparison-label="comparisonLabel"
+        :none-label="noneLabel"
+        :highlight="highlight"
+      />
+
+      <AppQueryErrorState
+        v-if="granularity === 'DAY' && dayError"
+        compact
+        title="No pudimos cargar las citas de este día"
+        @retry="refetchDay()"
+      />
+      <EarningsDayList
+        v-else-if="granularity === 'DAY'"
+        :appointments="completedDayAppointments"
+        :loading="dayLoading"
+      />
+      <EarningsBarChart
+        v-else
+        :buckets="chartBuckets"
+        :period-key="periodKey"
+        :loading="loading"
+      />
+    </template>
   </div>
 </template>

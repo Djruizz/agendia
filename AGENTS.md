@@ -63,8 +63,8 @@ Tres roles por dominio (`Appointment`, `Client`, `Service`):
 
 | Operación                | `Appointment`          | `Client`                       | `Service`             |
 | ------------------------ | ---------------------- | ------------------------------ | --------------------- |
-| Eliminar                 | **Hard delete** (`.delete()`) | **Soft delete** (`is_active = false`) | **Hard delete** (`.delete()`) |
-| "Recuperar"/restaurar    | `AppointmentUncancelModal` (CANCELED → PENDING, **no es restore real**) | Inexistente — se resetea `is_active` desde DB | Inexistente           |
+| Eliminar                 | **Hard delete** (`.delete()`) | **Soft delete** (`is_active = false`) | **Soft delete** (`is_active = false`; invalida `["services"]`, `["appointments"]` y `["public-services"]`) |
+| "Recuperar"/restaurar    | `AppointmentUncancelModal` (CANCELED → PENDING, **no es restore real**) | Inexistente — se resetea `is_active` desde DB | Inexistente — se resetea `is_active` desde DB |
 | Reusar copy "Podrás restaurarlo más tarde" | ❌ Solo aplica a Client (soft-delete) | ✅ | ❌ |
 
 ### Acciones de cita sin modal de confirmación

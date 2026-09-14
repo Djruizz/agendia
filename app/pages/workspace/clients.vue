@@ -9,6 +9,7 @@ const {
   hasNextPage,
   isFetchingNextPage,
   isFetching,
+  isError,
   searchTerm,
   sortOrder,
   refetch,
@@ -61,7 +62,13 @@ const onCreate = () => {
         <UButton icon="i-lucide-user-plus" size="lg" @click="onCreate" />
       </template>
     </LayoutPageHeader>
+    <AppQueryErrorState
+      v-if="isError"
+      title="No pudimos cargar tus clientes"
+      @retry="refetch()"
+    />
     <ClientList
+      v-else
       :clients="clientsList"
       :loading="isFetching"
       :has-more="hasNextPage"

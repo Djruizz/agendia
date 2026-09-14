@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { AuthFormField, FormSubmitEvent } from "@nuxt/ui";
-import { type ForgotPasswordSchema, forgotPasswordSchema } from "~/schemas/auth";
+import {
+  type ForgotPasswordSchema,
+  forgotPasswordSchema,
+} from "~/schemas/auth";
 
 definePageMeta({
   layout: "auth",
@@ -32,11 +35,12 @@ async function onSubmit(event: FormSubmitEvent<ForgotPasswordSchema>) {
     );
 
     if (error) {
+      const feedback = describeAuthError(error);
       toast.add({
-        title: "Error",
-        description: "No se pudo enviar el correo de recuperación",
-        icon: "i-lucide-circle-x",
-        color: "error",
+        title: feedback.title,
+        description: feedback.description,
+        icon: feedback.icon,
+        color: feedback.color,
       });
       return;
     }
@@ -61,7 +65,7 @@ async function onSubmit(event: FormSubmitEvent<ForgotPasswordSchema>) {
         @submit="onSubmit"
       >
         <template #footer>
-          <p class="text-sm text-(--ui-text-muted) text-center">
+          <p class="text-sm text-muted text-center">
             ¿Recordaste tu contraseña?
             <ULink to="/login" class="text-primary font-medium"
               >Iniciar sesión</ULink
@@ -79,10 +83,8 @@ async function onSubmit(event: FormSubmitEvent<ForgotPasswordSchema>) {
           <UIcon name="i-lucide-mail-check" class="size-7" />
         </div>
         <div class="space-y-1">
-          <h2 class="text-lg font-semibold text-(--ui-text)">
-            Revisa tu correo
-          </h2>
-          <p class="text-sm text-(--ui-text-muted)">
+          <h2 class="text-lg font-semibold text-default">Revisa tu correo</h2>
+          <p class="text-sm text-muted">
             Te enviamos un enlace para restablecer tu contraseña. Si no lo
             encuentras, revisa tu carpeta de spam.
           </p>
