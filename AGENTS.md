@@ -115,6 +115,7 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
 - **Mutaciones invalidan por queryKey raíz** (ej. `["appointments"]` invalida todas las variantes: list, day, counts). Borrar una cita o servicio refresca también otras vistas automáticamente.
 - **`DateUtils()` es una factory pura** (no reactiva). Para componentes que muestran hora Y deben respetar la preferencia `time_format` del usuario, usar `useDateUtils()` — wrapper que inyecta `hour12` reactivo desde `useTimeFormat()`. `DateUtils()` directo es para composables que no muestran hora (`AppointmentActions` usa `formatDate`, `Calendar` usa `localDayKey`).
 - **Color de la página pública (`/p/[slug]`)**: la página hace snapshot de `appConfig.ui.colors.primary` al montar, aplica `business.brand_color` (validado contra `COLOR_THEMES`) y restaura el valor previo en `onUnmounted`. Aprovecha que el style `:root` de @nuxt/ui es reactivo a `appConfig.ui.colors`. No afecta a `useApplyUserPreferences()` (que solo corre en `layouts/workspace.vue`).
+- **Integridad DB**: las 4 tablas de dominio tienen FK `professional_id`/`user_id → auth.users ON DELETE CASCADE` (borrar la cuenta borra todo su data). Las FKs de `appointments` a `clients`/`services` son `ON DELETE RESTRICT` (desde `20260914_core_hardening.sql`) — un hard-delete SQL de cliente/servicio con citas falla por diseño; el soft-delete (`is_active = false`) es el único camino. Los triggers `set_updated_at` y `touch_client_updated_at` (versionados en `20260901_core_tables.sql`) mantienen `updated_at` automáticamente — no setearlo manualmente en updates.
 
 ## Estructura
 
@@ -145,6 +146,8 @@ app/
 supabase/
   .temp/linked-project.json                  # generado por Supabase CLI
   migrations/                                # fuente de verdad para schema de DB
+                                             # (core recuperada de prod: 20260901_core_tables.sql;
+                                             #  20260914_core_hardening.sql aplicado vía SQL editor)
   # Edge Function "delete-account" (borrado de cuenta desde Settings) NO vive en el
   # repo: se gestiona desde el dashboard de Supabase (verify JWT desactivado — el
   # JWT se valida manualmente dentro del código de la función).
