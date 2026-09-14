@@ -41,6 +41,13 @@ const serviceName = computed(
   () => props.appointment?.services?.name || "Sin servicio",
 );
 
+const whatsappUrl = computed(() => {
+  const phone = props.appointment?.clients?.phone;
+  if (!phone) return null;
+  const digits = phone.replace(/[^\d]/g, "");
+  return digits ? `https://wa.me/${digits}` : null;
+});
+
 const isClientInactive = computed(
   () => props.appointment?.clients?.is_active === false,
 );
@@ -332,6 +339,7 @@ function onDelete() {
               </div>
             </div>
             <UButton
+              v-if="whatsappUrl"
               icon="i-lucide-message-circle"
               variant="link"
               color="success"
@@ -339,7 +347,7 @@ function onDelete() {
               :aria-label="`Enviar mensaje a ${clientName}`"
               :title="`Enviar mensaje a ${clientName}`"
               target="_blank"
-              :to="`https://wa.me/${appointment.clients.phone}`"
+              :to="whatsappUrl"
             />
           </div>
         </div>

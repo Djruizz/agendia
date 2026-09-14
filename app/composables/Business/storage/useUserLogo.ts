@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/vue-query";
+import { FriendlyError } from "~/utils/mutationErrors";
 
 const ALLOWED_EXTS = ["png", "jpg", "jpeg", "webp", "svg"] as const;
 const MAX_BYTES = 2_000_000;
@@ -13,10 +14,10 @@ export const useUploadLogo = () => {
     mutationFn: async (file: File): Promise<string> => {
       const ext = getExt(file.name);
       if (!ext || !ALLOWED_EXTS.includes(ext as (typeof ALLOWED_EXTS)[number])) {
-        throw new Error("Formato no soportado (png, jpg, jpeg, webp, svg)");
+        throw new FriendlyError("Formato no soportado (png, jpg, jpeg, webp, svg)");
       }
       if (file.size > MAX_BYTES) {
-        throw new Error("La imagen supera el máximo de 2MB");
+        throw new FriendlyError("La imagen supera el máximo de 2MB");
       }
 
       const path = `logos/${user.value!.sub}/logo-${crypto.randomUUID()}.${ext}`;

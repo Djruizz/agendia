@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import { FriendlyError } from "~/utils/mutationErrors";
 
 export const useUpdateBusinessProfile = () => {
   const supabase = useSupabaseClient();
@@ -24,7 +25,7 @@ export const useUpdateBusinessProfile = () => {
 
       if (error) {
         if (error.code === "23505") {
-          throw new Error("Ese enlace público ya está ocupado, prueba con otro.");
+          throw new FriendlyError("Ese enlace público ya está ocupado, prueba con otro.");
         }
         throw error;
       }

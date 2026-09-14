@@ -48,7 +48,7 @@ async function save() {
     toast.add({
       icon: "i-lucide-x",
       title: "No se pudo guardar el enlace",
-      description: err?.message ?? "Error inesperado",
+      description: describeMutationError(err),
       color: "error",
     });
   }

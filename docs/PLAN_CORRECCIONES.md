@@ -6,15 +6,7 @@ Escala de esfuerzo: S (< 1 h) · M (1–3 h) · L (3 h +)
 
 ## P1 — Antes de lanzar (riesgo, confusión de usuario o config faltante)
 
-| #  | Corrección                              | Dónde                                                                | Esfuerzo | Notas                                                                                                                                                                                             |
-|----|-----------------------------------------|----------------------------------------------------------------------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1  | `.env.example` con variables requeridas | raíz (archivo nuevo)                                                 | S        | `NUXT_PUBLIC_SUPABASE_URL` y `NUXT_PUBLIC_SUPABASE_KEY`. Hoy solo existe `.env` (gitignored) — un clon fresco falla silenciosamente.                                                              |
-| 2  | Backup de DB verificado                 | dashboard Supabase (Database → Backups)                             | S        | Confirmar PITR activo o export manual pre-lanzamiento. Sin esto no hay rollback ante desastre.                                                                                                    |
-| 3  | Toasts crudos de mutaciones             | modales en `app/components/{Appointment,Client,Service,Settings}/`  | M        | Reemplazar `err?.message` en los `onError` por copy en español (sin conexión / duplicado / error desconocido). Hoy expone errores crudos de Supabase/Postgres al usuario.                           |
-| 4  | `price` acepta negativos en el form     | `app/schemas/appointments.ts:15`                                     | S        | Falta `.min(0)`. La DB ya lo bloquea (CHECK desde `20260914`), pero el form no valida — verificar también `schemas/services.ts`.                                                                    |
-| 5  | Copy mentiroso en borrado de cliente    | `app/components/Client/ClientDeleteModal.vue:54`                    | S        | "Podrás restaurarlo más tarde" — no existe UI de restore. Opción A: quitar la frase; Opción B: resolver junto al restore de P2-8.                                                                  |
-| 6  | Sentry muerto                           | `nuxt.config.ts`                                                     | S        | Módulo integrado con DSN vacío: o setear el DSN o desactivar el módulo (hoy solo agrega peso al bundle sin reportar nada).                                                                         |
-| 7  | WhatsApp link sin sanitizar             | `app/components/Appointment/AppointmentDetailDrawer.vue:342` y `app/composables/Appointment/utils/AppointmentActions.ts:15` | S | Interpolan `phone` crudo en `wa.me/${phone}`. Reusar el patrón `digits` (strip de no-dígitos) de `PublicBusinessHeader.vue:9-16`.                                                            |
+**Implementado el 2026-09-14** (detalle en "Ya resuelto"). Único pendiente: **P1-2 — backup de DB** (verificación manual en dashboard de Supabase: Database → Backups, confirmar PITR activo o export manual pre-lanzamiento).
 
 ## P2 — Calidad post-lanzamiento
 
@@ -48,3 +40,9 @@ Escala de esfuerzo: S (< 1 h) · M (1–3 h) · L (3 h +)
 - **A4** — Soft-delete de servicios (`is_active = false` + invalidación de queries públicas).
 - **A1–A3** — Schema core versionado (`20260901_core_tables.sql`) + hardening aplicado y verificado (`20260914_core_hardening.sql`: índices owner-scoped, FKs a RESTRICT, NOT NULL en `professional_id`, CHECKs numéricos).
 - Triggers `updated_at` y FKs `→ auth.users CASCADE`: confirmados existentes en DB durante la auditoría (no eran gap real).
+- **P1-1** — `.env.example` en raíz con `NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY` (públicas por diseño) y `NUXT_PUBLIC_SENTRY_DSN` opcional.
+- **P1-3** — Toasts de mutaciones traducidos: `app/utils/mutationErrors.ts` (`describeMutationError` + `FriendlyError` para passthrough de errores ya traducidos por las mutaciones). Aplicado en 18 catches (modales de Appointment/Client/Service, Settings, onboarding); `SettingsAccountSecurity` usa `describeAuthError`.
+- **P1-4** — `.min(0)` en `price` de `app/schemas/appointments.ts` + guard de negativos en `AppointmentCompleteModal` (bypassea el schema). `schemas/services.ts` ya tenía `.min(1)` — verificado.
+- **P1-5** — Frase "Podrás restaurarlo más tarde" removida de `ClientDeleteModal` (no existe UI de restore; revertir junto a P2-8 si se construye).
+- **P1-6** — Sentry verificado vivo: `NUXT_PUBLIC_SENTRY_DSN` (en `.env`) sobreescribe `runtimeConfig.public.sentryDsn` y `sentry.{client,server}.config.ts` inicializan con guard. El gap era solo discoverability en clones frescos → resuelto por `.env.example`.
+- **P1-7** — Teléfono sanitizado (solo dígitos, patrón `PublicBusinessHeader`) en `AppointmentActions.sanitizePhone` y `AppointmentDetailDrawer` (`whatsappUrl` computed).

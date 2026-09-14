@@ -28,7 +28,7 @@ async function onConfirm(event: FormSubmitEvent<DeleteAccountSchema>) {
   } catch (err: any) {
     toast.add({
       title: "No se pudo eliminar la cuenta",
-      description: err?.message ?? "Error inesperado",
+      description: describeMutationError(err),
       icon: "i-lucide-alert-circle",
       color: "error",
     });

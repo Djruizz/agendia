@@ -76,7 +76,7 @@ async function saveProfile(event: FormSubmitEvent<BusinessProfileEditSchema>) {
     toast.add({
       icon: "i-lucide-x",
       title: "No se pudo guardar el perfil",
-      description: err?.message ?? "Error inesperado",
+      description: describeMutationError(err),
       color: "error",
     });
   }
@@ -113,7 +113,7 @@ async function onFileChange(event: Event) {
     toast.add({
       icon: "i-lucide-x",
       title: "No se pudo subir el logo",
-      description: err?.message ?? "Error inesperado",
+      description: describeMutationError(err),
       color: "error",
     });
   } finally {
@@ -136,7 +136,7 @@ async function onRemoveLogo() {
     toast.add({
       icon: "i-lucide-x",
       title: "No se pudo eliminar el logo",
-      description: err?.message ?? "Error inesperado",
+      description: describeMutationError(err),
       color: "error",
     });
   }

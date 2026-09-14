@@ -7,7 +7,7 @@ import {
 
 const sanitizePhone = (raw: string | null | undefined) => {
   if (!raw) return null;
-  return raw.replace(/[^\d+]/g, "");
+  return raw.replace(/[^\d]/g, "");
 };
 
 const buildWhatsAppUrl = (phone: string, message: string) => {

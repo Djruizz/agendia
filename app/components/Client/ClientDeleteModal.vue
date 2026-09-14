@@ -23,7 +23,7 @@ async function onConfirm() {
   } catch (err: any) {
     toast.add({
       title: "Error",
-      description: err?.message || "Ocurrió un error inesperado",
+      description: describeMutationError(err),
       color: "error",
       icon: "i-lucide-alert-circle",
     });
@@ -51,7 +51,7 @@ async function onConfirm() {
           </p>
           <p class="text-sm text-muted max-w-sm">
             El cliente se marcará como inactivo y dejará de aparecer en la
-            lista. Podrás restaurarlo más tarde.
+            lista.
           </p>
         </div>
 
