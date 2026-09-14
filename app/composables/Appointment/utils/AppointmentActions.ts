@@ -1,4 +1,9 @@
 import type { AppointmentWithRelations } from "~/types/appointments";
+import {
+  renderWhatsAppTemplate,
+  useWhatsAppMessages,
+  type WhatsAppTemplateVars,
+} from "~/composables/User/utils/useWhatsAppMessages";
 
 const sanitizePhone = (raw: string | null | undefined) => {
   if (!raw) return null;
@@ -12,17 +17,33 @@ const buildWhatsAppUrl = (phone: string, message: string) => {
 
 export const useAppointmentActions = () => {
   const { formatDate, formatTime } = useDateUtils();
+  const { whatsappMessages } = useWhatsAppMessages();
+
+  const buildTemplateVars = (
+    appointment: AppointmentWithRelations,
+  ): WhatsAppTemplateVars => ({
+    cliente: appointment.clients?.name ?? "",
+    servicio: appointment.services?.name ?? "",
+    fecha: formatDate(appointment.date, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
+    hora: formatTime(appointment.date, {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  });
 
   const followUpViaWhatsApp = (appointment: AppointmentWithRelations) => {
     const phone = sanitizePhone(appointment.clients?.phone);
     if (!phone) return;
 
-    const dateLabel = formatDate(appointment.date);
-
-    const message =
-      `Hola ${appointment.clients?.name ?? ""}, ` +
-      `te escribo para hacer seguimiento de tu cita del ${dateLabel}. ` +
-      `¿Te gustaría agendar una nueva?`;
+    const message = renderWhatsAppTemplate(
+      whatsappMessages.value.follow_up,
+      buildTemplateVars(appointment),
+    );
 
     const url = buildWhatsAppUrl(phone, message);
     if (import.meta.client) {
@@ -34,22 +55,10 @@ export const useAppointmentActions = () => {
     const phone = sanitizePhone(appointment.clients?.phone);
     if (!phone) return;
 
-    const dateLabel = formatDate(appointment.date, {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-    const timeLabel = formatTime(appointment.date, {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    const message =
-      `Hola ${appointment.clients?.name ?? ""}! ` +
-      `Te recordamos tu cita de ${appointment.services?.name ?? ""} ` +
-      `el ${dateLabel} a las ${timeLabel}. ` +
-      `Por favor confirma tu asistencia. ¡Gracias!`;
+    const message = renderWhatsAppTemplate(
+      whatsappMessages.value.confirmation,
+      buildTemplateVars(appointment),
+    );
 
     const url = buildWhatsAppUrl(phone, message);
     if (import.meta.client) {

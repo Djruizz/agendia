@@ -1,4 +1,8 @@
-import type { ColorTheme, TimeFormat } from "~/schemas/preferences";
+import type {
+  ColorTheme,
+  TimeFormat,
+  WhatsAppVariable,
+} from "~/schemas/preferences";
 
 export const COLOR_THEME_LABELS: Record<ColorTheme, string> = {
   red: "Rojo",
@@ -23,4 +27,11 @@ export const COLOR_THEME_LABELS: Record<ColorTheme, string> = {
 export const TIME_FORMAT_LABELS: Record<TimeFormat, string> = {
   "12h": "12h",
   "24h": "24h",
+};
+
+export const WHATSAPP_VARIABLE_LABELS: Record<WhatsAppVariable, string> = {
+  cliente: "Nombre del cliente",
+  servicio: "Nombre del servicio",
+  fecha: "Fecha de la cita",
+  hora: "Hora de la cita",
 };
