@@ -60,3 +60,9 @@ export const changePasswordSchema = z
   });
 
 export type ChangePasswordSchema = z.infer<typeof changePasswordSchema>;
+
+export const deleteAccountSchema = z.object({
+  password: z.string("Contraseña inválida").min(1, "Ingresa tu contraseña"),
+});
+
+export type DeleteAccountSchema = z.infer<typeof deleteAccountSchema>;

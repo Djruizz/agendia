@@ -51,6 +51,7 @@ definePageMeta({
         </SettingsRow>
       </SettingsSection>
       <SettingsAccountSecurity />
+      <SettingsDeleteAccount />
       <SettingsSupport />
     </div>
   </div>
