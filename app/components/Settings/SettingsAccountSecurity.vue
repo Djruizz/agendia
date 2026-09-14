@@ -18,7 +18,9 @@ const currentEmail = computed(() => user.value?.email ?? "");
 
 const emailState = reactive<ChangeEmailSchema>({ email: "" });
 const emailSubmitting = ref(false);
-const emailFormRef = useTemplateRef<{ clearErrors: () => void }>("emailFormRef");
+const emailFormRef = useTemplateRef<{ clearErrors: () => void }>(
+  "emailFormRef",
+);
 
 watch(
   () => emailModalOpen.value,
@@ -42,9 +44,12 @@ async function saveEmail(event: FormSubmitEvent<ChangeEmailSchema>) {
       });
       return;
     }
-    const { error } = await supabase.auth.updateUser({
-      email: event.data.email,
-    });
+    const { error } = await supabase.auth.updateUser(
+      {
+        email: event.data.email,
+      },
+      { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+    );
     if (error) throw error;
     emailModalOpen.value = false;
     toast.add({
@@ -131,10 +136,7 @@ async function onSignOut() {
     title="Cuenta y seguridad"
     description="Administra tu email, contraseña y sesión."
   >
-    <SettingsRow
-      label="Email"
-      :description="currentEmail || 'Sin email'"
-    >
+    <SettingsRow label="Email" :description="currentEmail || 'Sin email'">
       <UButton
         label="Cambiar"
         color="neutral"
@@ -155,10 +157,7 @@ async function onSignOut() {
       />
     </SettingsRow>
 
-    <SettingsRow
-      label="Sesión"
-      description="Cierra sesión en este navegador."
-    >
+    <SettingsRow label="Sesión" description="Cierra sesión en este navegador.">
       <UButton
         label="Cerrar sesión"
         icon="i-lucide-log-out"

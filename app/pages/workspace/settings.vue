@@ -50,7 +50,10 @@ definePageMeta({
           <SettingsWeeksFollowUp />
         </SettingsRow>
       </SettingsSection>
+      <SettingsWhatsAppMessages />
       <SettingsAccountSecurity />
+      <SettingsDeleteAccount />
+      <SettingsSupport />
     </div>
   </div>
 </template>

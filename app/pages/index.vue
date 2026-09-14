@@ -38,14 +38,12 @@ const features = [
         class="mb-6"
       />
       <h1
-        class="text-4xl sm:text-6xl font-extrabold tracking-tight text-(--ui-text) mb-6"
+        class="text-4xl sm:text-6xl font-extrabold tracking-tight text-default mb-6"
       >
         Organiza tu agenda
         <span class="text-primary">sin esfuerzo</span>
       </h1>
-      <p
-        class="text-lg sm:text-xl text-(--ui-text-muted) max-w-2xl mx-auto mb-10"
-      >
+      <p class="text-lg sm:text-xl text-muted max-w-2xl mx-auto mb-10">
         Agendia te ayuda a gestionar citas, clientes y servicios en un solo
         lugar. Simple, rápida y hecha para tu negocio.
       </p>
@@ -68,7 +66,7 @@ const features = [
     </div>
   </section>
 
-  <section class="border-t border-(--ui-border)">
+  <section class="border-t border-default">
     <div class="max-w-6xl mx-auto px-6 py-16">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <UCard
@@ -81,10 +79,10 @@ const features = [
           >
             <UIcon :name="feature.icon" class="size-6" />
           </div>
-          <h3 class="font-semibold text-(--ui-text) mb-2">
+          <h3 class="font-semibold text-default mb-2">
             {{ feature.title }}
           </h3>
-          <p class="text-sm text-(--ui-text-muted)">
+          <p class="text-sm text-muted">
             {{ feature.description }}
           </p>
         </UCard>
@@ -92,13 +90,21 @@ const features = [
     </div>
   </section>
 
-  <footer class="border-t border-(--ui-border)">
+  <footer class="border-t border-default">
     <div
       class="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3"
     >
-      <p class="text-sm text-(--ui-text-muted)">
-        © {{ new Date().getFullYear() }} Agendia
-      </p>
+      <div class="flex items-center gap-4">
+        <p class="text-sm text-muted">
+          © {{ new Date().getFullYear() }} Agendia
+        </p>
+        <ULink to="/terminos" class="text-sm text-muted hover:text-default"
+          >Términos</ULink
+        >
+        <ULink to="/privacidad" class="text-sm text-muted hover:text-default"
+          >Privacidad</ULink
+        >
+      </div>
       <UButton
         to="/workspace"
         variant="ghost"

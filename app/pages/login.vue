@@ -49,7 +49,12 @@ onUnmounted(() => {
 });
 
 async function resendConfirmation() {
-  if (resendCooldown.value > 0 || resendLoading.value || !unconfirmedEmail.value) return;
+  if (
+    resendCooldown.value > 0 ||
+    resendLoading.value ||
+    !unconfirmedEmail.value
+  )
+    return;
   resendLoading.value = true;
   try {
     const { error } = await supabase.auth.resend({
@@ -89,7 +94,10 @@ async function onSubmit(event: FormSubmitEvent<LoginSchema>) {
       password: event.data.password,
     });
     if (error) {
-      if (error.message.includes("not confirmed") || error.message.includes("Email not confirmed")) {
+      if (
+        error.message.includes("not confirmed") ||
+        error.message.includes("Email not confirmed")
+      ) {
         unconfirmedEmail.value = event.data.email;
         toast.add({
           title: "Email no confirmado",
@@ -139,15 +147,22 @@ async function onSubmit(event: FormSubmitEvent<LoginSchema>) {
     >
       <template #footer>
         <div class="space-y-2 text-center">
-          <p class="text-sm text-(--ui-text-muted)">
+          <p class="text-sm text-muted">
             <ULink to="/forgot-password" class="text-primary font-medium"
               >¿Olvidaste tu contraseña?</ULink
             >
           </p>
-          <p class="text-sm text-(--ui-text-muted)">
+          <p class="text-sm text-muted">
             ¿No tienes cuenta?
             <ULink to="/register" class="text-primary font-medium"
               >Crear cuenta</ULink
+            >
+          </p>
+          <p class="text-xs text-muted">
+            Al usar Agendia aceptas los
+            <ULink to="/terminos" class="text-primary">Términos</ULink> y el
+            <ULink to="/privacidad" class="text-primary"
+              >Aviso de privacidad</ULink
             >
           </p>
         </div>

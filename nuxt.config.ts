@@ -2,7 +2,12 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  modules: ["@nuxt/ui", "@nuxtjs/supabase", "@vite-pwa/nuxt"],
+  modules: ["@nuxt/ui", "@nuxtjs/supabase", "@vite-pwa/nuxt", "@sentry/nuxt"],
+  sentry: {
+    sourcemaps: {
+      disable: true,
+    },
+  },
   imports: {
     dirs: ["composables/**", "types/**"],
   },
@@ -13,6 +18,7 @@ export default defineNuxtConfig({
     public: {
       locale: "es-MX",
       currency: "MXN",
+      sentryDsn: "",
     },
   },
   ssr: false,
@@ -31,6 +37,7 @@ export default defineNuxtConfig({
         },
         {
           rel: "apple-touch-icon",
+          type: "image/png",
           href: "/icon-192x192.png",
         },
         {

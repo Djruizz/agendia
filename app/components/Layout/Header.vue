@@ -3,6 +3,7 @@ import type { DropdownMenuItem } from "@nuxt/ui";
 
 const supabase = useSupabaseClient();
 const colorMode = useColorMode();
+const { enabled: supportEnabled, reportUrl } = useSupportWhatsApp();
 
 const isDark = computed({
   get: () => colorMode.value === "dark",
@@ -46,6 +47,23 @@ const items = computed<DropdownMenuItem[][]>(() => [
     </template>
     <template #right>
       <div class="flex items-center gap-1">
+        <UBadge
+          color="warning"
+          variant="subtle"
+          label="Beta"
+          class="hidden sm:inline-flex"
+        />
+        <UTooltip v-if="supportEnabled" text="Reportar problema">
+          <UButton
+            :to="reportUrl"
+            target="_blank"
+            icon="i-lucide-message-circle-warning"
+            color="neutral"
+            variant="ghost"
+            aria-label="Reportar problema"
+            class="cursor-pointer"
+          />
+        </UTooltip>
         <UTooltip text="Ganancias">
           <UButton
             to="/workspace/earnings"

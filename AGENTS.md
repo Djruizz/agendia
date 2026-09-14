@@ -145,6 +145,9 @@ app/
 supabase/
   .temp/linked-project.json                  # generado por Supabase CLI
   migrations/                                # fuente de verdad para schema de DB
+  # Edge Function "delete-account" (borrado de cuenta desde Settings) NO vive en el
+  # repo: se gestiona desde el dashboard de Supabase (verify JWT desactivado — el
+  # JWT se valida manualmente dentro del código de la función).
 ```
 
 ## Verificación
