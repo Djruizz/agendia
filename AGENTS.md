@@ -94,7 +94,7 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
   - `composables/Business/` — `queries/` (`useBusinessProfile` autenticado, `usePublicBusiness` y `usePublicServices` para `/p/[slug]`), `mutations/` (`useCreateBusinessProfile`, `useUpdateBusinessProfile`), `utils/` (`useSlug.ts`: `generateSlug()` con strip de acentos NFD + `useSlugAvailability()` con debounce), `storage/` (`useUserLogo.ts`: `useUploadLogo`, `useRemoveLogo`, `useLogoPublicUrl`). Las mutaciones usan `setQueryData(["business-profile", user.sub])` en `onSuccess`. `useCreateBusinessProfile` acepta `Omit<BusinessProfileInsert, "user_id">` (la mutación inyecta `user_id`). El dominio `Business/storage/` se usa para el logo de `business_profiles.logo_path` (el antiguo composables/User/storage/ fue renombrado y queda deprecated). `business_profiles` también guarda `brand_color` (color del branding de la página pública — independiente de la preferencia personal `color_theme` de `user_preferences`).
   - `composables/User/` — `queries/` (`useUserPreferences`), `mutations/` (`useUpdateUserPreferences`), `utils/` (`useTimeFormat()`, `useApplyUserPreferences()`). El directorio `storage/` ya no existe aquí (movido a `Business/storage/`).
   - `composables/shared/utils/` — helpers cross-domain: `DateUtils()` (factory pura, no reactiva), `useDateUtils()` (wrapper reactivo con `hour12` desde `useTimeFormat()`), `MoneyUtils()` (currency), `useNetworkStatus()` (estado de red reactivo, listeners únicos a nivel módulo; usado por `layouts/workspace.vue` para el toast persistente "Sin conexión").
-  - **RPC de Postgres**: `is_slug_available(p_slug text)` en `public` (SECURITY DEFINER, expone solo un booleano). Usado por `useSlugAvailability` para chequear disponibilidad de slug en tiempo real (excluye fila propia: `user_id != auth.uid()`). El constraint unique sigue siendo la respuesta definitiva; el mapeo de `23505` en `useCreateBusinessProfile` / `useUpdateBusinessProfile` se mantiene como red de seguridad por condición de carrera. Creada en `supabase/migrations/20260902_is_slug_available.sql`.
+  - **RPC de Postgres**: `is_slug_available(p_slug text)` en `public` (SECURITY DEFINER, expone solo un booleano). Usado por `useSlugAvailability` para chequear disponibilidad de slug en tiempo real (excluye fila propia: `user_id != auth.uid()`). El constraint unique sigue siendo la respuesta definitiva; el mapeo de `23505` en `useCreateBusinessProfile` / `useUpdateBusinessProfile` se mantiene como red de seguridad por condición de carrera. Creada en `supabase/migrations/20260902100300_is_slug_available.sql`.
   - Las mutaciones invalidan por queryKey raíz en `onSuccess` (ej. `["appointments"]` invalida list, day, counts).
   - **Estrategias de cache TanStack**: `setQueryData` en `onSuccess` para mutaciones que conocen el estado final (ej. `useUpdateUserPreferences` hace upsert + `select` y sabe el resultado). `invalidateQueries` para mutaciones que NO conocen el estado final o afectan múltiples queryKeys derivadas. Componentes Settings sin side effects imperativos (ej. `SettingsTimeFormat`) no necesitan rollback en `onError` — la cache no se mutó en error y un `computed` getter auto-revierte el UI. Componentes con side effects imperativos (ej. `SettingsColorSelect` muta `appConfig.ui.colors.primary` optimistic) SÍ requieren rollback explícito en `onError`.
 - **`@nuxt/ui` autoimports**: composables (`useToast`, `useSupabaseClient`, `useSupabaseUser`, `useInfiniteQuery`, etc.) están disponibles globalmente — no importarlos manualmente salvo tipos.
@@ -144,12 +144,18 @@ app/
   types/{database.types,appointments,clients,services,preferences,business}.ts
 supabase/
   .temp/linked-project.json                  # generado por Supabase CLI
+  README.md                                  # notas de infra: rename de migrations, repair
+                                             # del historial remoto (completado 2026-09-15),
+                                             # contrato de la Edge Function delete-account,
+                                             # dev local con Docker
   migrations/                                # fuente de verdad para schema de DB
-                                             # (core recuperada de prod: 20260901_core_tables.sql;
+                                             # (prefijos con timestamp completo y único desde 2026-09-15;
+                                             #  core recuperada de prod: 20260901_core_tables.sql;
                                              #  20260914_core_hardening.sql aplicado vía SQL editor)
   # Edge Function "delete-account" (borrado de cuenta desde Settings) NO vive en el
   # repo: se gestiona desde el dashboard de Supabase (verify JWT desactivado — el
-  # JWT se valida manualmente dentro del código de la función).
+  # JWT se valida manualmente dentro del código de la función). Contrato completo
+  # en supabase/README.md.
 ```
 
 ## Verificación

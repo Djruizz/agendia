@@ -14,13 +14,7 @@ Escala de esfuerzo: S (< 1 h) · M (1–3 h) · L (3 h +)
 
 ## P3 — Higiene / infra (opcional)
 
-| #  | Corrección                                  | Dónde                                | Esfuerzo | Notas                                                                                                                                                |
-|----|---------------------------------------------|--------------------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 17 | 17 paquetes @tiptap sin uso                 | `package.json:19-35`                 | S        | Ningún componente usa tiptap. `pnpm remove` + `pnpm typecheck`.                                                                                       |
-| 18 | Edge Function "delete-account" fuera del repo | dashboard Supabase                 | M        | Mover a `supabase/functions/` para auditabilidad (verify JWT desactivado — se valida manual dentro de la función) o documentar su gestión actual.      |
-| 19 | Prefijos duplicados en migrations viejas    | `supabase/migrations/` (2× 20260820, 5× 20260902) | S | Solo necesario si se vuelve a usar `db pull`/`db push` del CLI: renombrar a versiones únicas + `supabase migration repair`.               |
-| 20 | Cleanup del historial remoto de migraciones | CLI                                  | S        | Los rows del repair a medias (20260820/20260902) quedaron inertes — cosmético.                                                                        |
-| 21 | Docker Desktop para dev local               | máquina                              | M        | Habilita `supabase start`/`db reset` local y verificar el replay de migrations en entorno fresco. No requerido para lanzar.                          |
+**2026-09-15**: implementado completo. P3-17 directo; P3-18/P3-19 en el repo; P3-20 ejecutado por el usuario con el CLI (historial remoto reconciliado — `migration list` muestra Local = Remote en las 9 migrations, incluidas `20260901` y `20260914` marcadas como aplicadas). Detalle en "Ya resuelto".
 
 ## Ya resuelto (no re-auditar)
 
@@ -45,3 +39,8 @@ Escala de esfuerzo: S (< 1 h) · M (1–3 h) · L (3 h +)
 - **P2-14** — aria-labels en todos los botones icon-only: headers de páginas (refrescar/crear), dropdowns de cards, prev/next del calendario y settings del header.
 - **P2-15** — No-gap de código: el item "Ver historial" ya había sido removido de `ClientCard` (commit b3449d2); era un hallazgo de auditoría desactualizado.
 - **P2-16** — No-gap: `@nuxt/ui` v4 depende de `@nuxt/fonts` y lo registra automáticamente, por lo que la fuente declarada en `main.css` (`--font-sans: "Plus Jakarta Sans"`) sí se carga y self-hostea.
+- **P3-17** — 17 paquetes `@tiptap/*` removidos de `package.json` (ningún componente los usaba; verificado con grep en `app/` y repo). `pnpm typecheck` OK.
+- **P3-18** — Edge Function `delete-account` documentada en `supabase/README.md`: contrato con el cliente (endpoint, headers, body, respuestas), consideraciones de seguridad (verify JWT desactivado + validación manual, CASCADE vía FK a `auth.users`) y pasos para moverla al repo si se desea.
+- **P3-19** — Migrations con prefijos duplicados renombradas a timestamps únicos (`git mv`): `2× 20260820_*` → `20260820100000/100100`, `5× 20260902_*` → `20260902100000`–`20260902100400`. Referencias actualizadas en AGENTS.md y PLAN_PRODUCTO.md.
+- **P3-20** — Resuelto el 2026-09-15 por el usuario: `migration repair` ejecutado con el CLI (login + reverted de `20260820`/`20260902`, applied de las 7 versiones renombradas y de `20260901`/`20260914`). `migration list --linked` muestra Local = Remote en las 9 migrations; `db push`/`db pull` vuelven a ser seguros.
+- **P3-21** — **Pendiente usuario (opcional)**: Docker Desktop no está instalado. `supabase start`/`db reset` local para verificar el replay de migrations queda como opción documentada en `supabase/README.md`. No requerido para lanzar.
