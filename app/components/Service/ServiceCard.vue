@@ -9,7 +9,10 @@ const props = defineProps<{
 const emit = defineEmits<{
   edit: [service: Service];
   delete: [service: Tables<"services">];
+  restore: [service: Service];
 }>();
+
+const isInactive = computed(() => props.service.is_active === false);
 
 const formattedDuration = computed(() => {
   const mins = props.service.duration_minutes ?? 0;
@@ -23,21 +26,34 @@ const { formatCurrency } = MoneyUtils();
 
 const formattedPrice = computed(() => formatCurrency(props.service.price));
 
-const items = computed<DropdownMenuItem[][]>(() => [
-  [
-    {
-      label: "Editar",
-      icon: "i-lucide-pencil",
-      onSelect: () => emit("edit", props.service),
-    },
-    {
-      label: "Eliminar",
-      icon: "i-lucide-trash-2",
-      color: "error",
-      onSelect: () => emit("delete", props.service),
-    },
-  ],
-]);
+const items = computed<DropdownMenuItem[][]>(() =>
+  isInactive.value
+    ? [
+        [
+          {
+            label: "Reactivar",
+            icon: "i-lucide-rotate-ccw",
+            color: "success",
+            onSelect: () => emit("restore", props.service),
+          },
+        ],
+      ]
+    : [
+        [
+          {
+            label: "Editar",
+            icon: "i-lucide-pencil",
+            onSelect: () => emit("edit", props.service),
+          },
+          {
+            label: "Eliminar",
+            icon: "i-lucide-trash-2",
+            color: "error",
+            onSelect: () => emit("delete", props.service),
+          },
+        ],
+      ],
+);
 </script>
 
 <template>
@@ -51,9 +67,19 @@ const items = computed<DropdownMenuItem[][]>(() => [
         </div> -->
 
         <div class="min-w-0 flex-1">
-          <p class="text-sm font-semibold text-highlighted truncate">
-            {{ service.name }}
-          </p>
+          <div class="flex items-center gap-2 flex-wrap">
+            <p class="text-sm font-semibold text-highlighted truncate">
+              {{ service.name }}
+            </p>
+            <UBadge
+              v-if="isInactive"
+              size="sm"
+              variant="subtle"
+              color="neutral"
+              icon="i-lucide-eye-off"
+              label="Inactivo"
+            />
+          </div>
           <p
             v-if="service.description"
             class="text-xs text-muted mt-0.5 line-clamp-2"
@@ -86,6 +112,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
           size="sm"
           variant="link"
           color="neutral"
+          aria-label="Más acciones"
           class="cursor-pointer shrink-0"
         />
       </UDropdownMenu>

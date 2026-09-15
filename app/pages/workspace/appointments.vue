@@ -42,6 +42,7 @@ const onCreate = () => {
           icon="i-lucide-refresh-cw"
           variant="link"
           color="neutral"
+          aria-label="Actualizar"
           :class="{ 'animate-spin': isFetching }"
           @click="refetch()"
         />
@@ -49,6 +50,7 @@ const onCreate = () => {
           icon="i-lucide-plus"
           color="primary"
           size="lg"
+          aria-label="Nueva cita"
           @click="onCreate"
         />
       </template>

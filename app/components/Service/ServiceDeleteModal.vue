@@ -51,6 +51,7 @@ async function onConfirm() {
           <p class="text-sm text-muted max-w-sm">
             El servicio se desactivará y dejará de aparecer en tu lista y en tu
             página pública. Las citas históricas conservarán su información.
+            Podrás reactivarlo más tarde desde el filtro de inactivos.
           </p>
         </div>
 

@@ -10,17 +10,7 @@ Escala de esfuerzo: S (< 1 h) · M (1–3 h) · L (3 h +)
 
 ## P2 — Calidad post-lanzamiento
 
-| #  | Corrección                                | Dónde                                             | Esfuerzo | Notas                                                                                                                                                          |
-|----|-------------------------------------------|---------------------------------------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 8  | UI de restore para clientes/servicios     | `workspace/clients.vue` / `workspace/services.vue` | M–L      | Filtro "inactivos" + acción "Reactivar" (`is_active = true`). Desbloquea el copy honesto de P1-5 y del `ServiceDeleteModal`.                                      |
-| 9  | Race en update de preferencias            | `app/composables/User/mutations/useUpdateUserPreferences.ts:14-18` | S–M   | Dos saves concurrentes se pisan (último gana). Mover a upsert atómico o merge por campo.                                                                        |
-| 10 | Onboarding fail-open                      | `app/middleware/onboarding.ts`                    | S        | Si falla el chequeo de `business_profiles`, deja pasar al workspace. Endurecer: retry explícito o fail-closed con mensaje.                                      |
-| 11 | Listeners leak en pickers de color        | `app/components/Settings/SettingsColorSelect.vue` | S        | `addEventListener` sin `removeEventListener` en unmount.                                                                                                       |
-| 12 | Empty states sin CTA                      | listas de clients/services/appointments           | M        | Estado vacío con botón "Crear primer cliente / servicio / cita" que abre el modal correspondiente.                                                              |
-| 13 | Detección offline (PWA)                   | composable global                                 | M        | `navigator.onLine` + eventos + toast persistente "Sin conexión". Complementa B2/B3 (hoy el error de red se muestra, pero sin aviso previo).                     |
-| 14 | aria-labels faltantes                     | icon-only buttons (dropdowns, close, actions)     | M        | Auditoría de botones sin texto accesible en Card/Drawer/Modals.                                                                                                 |
-| 15 | "Ver historial" apunta a ruta inexistente | `app/components/Client/ClientCard.vue`            | S        | El item abre `/admin/clientes/{id}` que no existe: ocultar el item o construir la ruta de historial.                                                            |
-| 16 | Font del design system sin cargar         | `app/assets/css/main.css` / `nuxt.config.ts`      | S        | Verificar carga de la fuente de @nuxt/ui; hoy depende de fallbacks del sistema.                                                                                 |
+**Implementado el 2026-09-15** (detalle en "Ya resuelto"). Los 8 ítems (#8–#16) quedaron cubiertos: 6 implementados, 1 ya resuelto previamente (#15) y 1 era un no-gap (#16).
 
 ## P3 — Higiene / infra (opcional)
 
@@ -46,3 +36,12 @@ Escala de esfuerzo: S (< 1 h) · M (1–3 h) · L (3 h +)
 - **P1-5** — Frase "Podrás restaurarlo más tarde" removida de `ClientDeleteModal` (no existe UI de restore; revertir junto a P2-8 si se construye).
 - **P1-6** — Sentry verificado vivo: `NUXT_PUBLIC_SENTRY_DSN` (en `.env`) sobreescribe `runtimeConfig.public.sentryDsn` y `sentry.{client,server}.config.ts` inicializan con guard. El gap era solo discoverability en clones frescos → resuelto por `.env.example`.
 - **P1-7** — Teléfono sanitizado (solo dígitos, patrón `PublicBusinessHeader`) en `AppointmentActions.sanitizePhone` y `AppointmentDetailDrawer` (`whatsappUrl` computed).
+- **P2-8** — UI de reactivación para clientes/servicios: filtro Activos/Inactivos en `ClientList`/`ServiceList` (`v-model:active-filter`, incluido en queryKey de `useInfiniteClients`/`useServices`), acción "Reactivar" en el dropdown de cards inactivos (`is_active = true` vía `useUpdateClient`/`useUpdateService` orquestado desde la página), badge "Inactivo". `useUpdateService` ahora invalida `["appointments"]` y `["public-services"]` además de `["services"]` (espejo del soft-delete). Copy honesto restituido en `ClientDeleteModal` y `ServiceDeleteModal` ("Podrás reactivarlo más tarde desde el filtro de inactivos").
+- **P2-9** — Race en preferencias: `useUpdateUserPreferences` serializa saves concurrentes con una cola a nivel módulo; cada save hace merge sobre el resultado del anterior (dos campos salvados a la vez ya no se pisan).
+- **P2-10** — Onboarding fail-closed: `onboarding.ts` reintenta el chequeo de `business_profiles` (2 intentos, 500ms de espera) y si persiste el fallo lanza `createError` fatal → página de error global (el CTA "Ir a mi agenda" reintenta el middleware).
+- **P2-11** — `removeEventListener` en `onUnmounted` de `SettingsColorSelect` (antes: leak del listener `resize`).
+- **P2-12** — Empty states con CTA: "Crear mi primer cliente / servicio / cita" en `ClientList`/`ServiceList`/`AppointmentList` (emiten `create`; sin CTA cuando hay búsqueda activa o filtro de estado/Inactivos).
+- **P2-13** — Detección offline: `useNetworkStatus()` (composables/shared/utils, listeners únicos a nivel módulo, idempotente) + toast persistente "Sin conexión" (`duration: Infinity`, soportado nativamente por el Toast de @nuxt/ui) y toast de reconexión, activado en `layouts/workspace.vue`.
+- **P2-14** — aria-labels en todos los botones icon-only: headers de páginas (refrescar/crear), dropdowns de cards, prev/next del calendario y settings del header.
+- **P2-15** — No-gap de código: el item "Ver historial" ya había sido removido de `ClientCard` (commit b3449d2); era un hallazgo de auditoría desactualizado.
+- **P2-16** — No-gap: `@nuxt/ui` v4 depende de `@nuxt/fonts` y lo registra automáticamente, por lo que la fuente declarada en `main.css` (`--font-sans: "Plus Jakarta Sans"`) sí se carga y self-hostea.

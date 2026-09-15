@@ -5,6 +5,7 @@ const PAGE_SIZE = 10;
 export const useInfiniteClients = () => {
   const searchTerm = ref("");
   const sortOrder = ref<"asc" | "desc">("asc");
+  const activeFilter = ref<"active" | "inactive">("active");
 
   const supabase = useSupabaseClient();
   const user = useSupabaseUser();
@@ -17,7 +18,7 @@ export const useInfiniteClients = () => {
         .from("clients")
         .select("*")
         .eq("professional_id", user.value!.sub)
-        .eq("is_active", true)
+        .eq("is_active", activeFilter.value === "active")
       .order("name", { ascending: sortOrder.value === "asc" })
       .range(from, to);
 
@@ -37,6 +38,7 @@ export const useInfiniteClients = () => {
     user.value?.sub,
     searchTerm.value,
     sortOrder.value,
+    activeFilter.value,
   ]);
 
   const infiniteQuery = useInfiniteQuery({
@@ -52,5 +54,6 @@ export const useInfiniteClients = () => {
     ...infiniteQuery,
     searchTerm,
     sortOrder,
+    activeFilter,
   };
 };

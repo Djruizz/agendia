@@ -39,12 +39,17 @@ const selected = computed<ColorTheme>({
 const open = ref(false);
 const isMobile = ref(false);
 
+const checkIsMobile = () => {
+  isMobile.value = window.innerWidth <= 640;
+};
+
 onMounted(() => {
-  const check = () => {
-    isMobile.value = window.innerWidth <= 640;
-  };
-  check();
-  window.addEventListener("resize", check);
+  checkIsMobile();
+  window.addEventListener("resize", checkIsMobile);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", checkIsMobile);
 });
 const onChange = (value: boolean) => {
   open.value = value;

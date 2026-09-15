@@ -51,7 +51,7 @@ async function onConfirm() {
           </p>
           <p class="text-sm text-muted max-w-sm">
             El cliente se marcará como inactivo y dejará de aparecer en la
-            lista.
+            lista. Podrás reactivarlo más tarde desde el filtro de inactivos.
           </p>
         </div>
 

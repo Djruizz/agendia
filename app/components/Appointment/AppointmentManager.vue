@@ -155,6 +155,7 @@ defineExpose({
       @delete="onDelete"
       @restore="onUncancel"
       @reagendar="onReagendar"
+      @create="onCreate"
     />
 
     <AppointmentModal

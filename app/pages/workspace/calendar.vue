@@ -77,6 +77,7 @@ const onCreate = () => {
           icon="i-lucide-plus"
           color="primary"
           size="lg"
+          aria-label="Nueva cita"
           @click="onCreate"
         />
       </template>

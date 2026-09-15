@@ -225,6 +225,7 @@ const serviceWithPrice = (service: string, price: number | null) => {
             size="sm"
             variant="link"
             color="neutral"
+            aria-label="Más acciones"
             class="cursor-pointer shrink-0"
             @click.stop
           />

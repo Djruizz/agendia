@@ -10,6 +10,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   edit: [client: Client];
   delete: [client: Client];
+  restore: [client: Client];
 }>();
 
 const initials = computed(() => {
@@ -21,21 +22,36 @@ const initials = computed(() => {
     .toUpperCase();
 });
 
-const items = computed<DropdownMenuItem[][]>(() => [
-  [
-    {
-      label: "Editar",
-      icon: "i-lucide-pencil",
-      onSelect: () => emit("edit", props.client),
-    },
-    {
-      label: "Eliminar",
-      icon: "i-lucide-trash-2",
-      color: "error",
-      onSelect: () => emit("delete", props.client),
-    },
-  ],
-]);
+const isInactive = computed(() => props.client.is_active === false);
+
+const items = computed<DropdownMenuItem[][]>(() =>
+  isInactive.value
+    ? [
+        [
+          {
+            label: "Reactivar",
+            icon: "i-lucide-rotate-ccw",
+            color: "success",
+            onSelect: () => emit("restore", props.client),
+          },
+        ],
+      ]
+    : [
+        [
+          {
+            label: "Editar",
+            icon: "i-lucide-pencil",
+            onSelect: () => emit("edit", props.client),
+          },
+          {
+            label: "Eliminar",
+            icon: "i-lucide-trash-2",
+            color: "error",
+            onSelect: () => emit("delete", props.client),
+          },
+        ],
+      ],
+);
 </script>
 
 <template>
@@ -49,9 +65,19 @@ const items = computed<DropdownMenuItem[][]>(() => [
         />
 
         <div class="min-w-0 flex-1">
-          <p class="text-sm font-semibold text-highlighted truncate">
-            {{ client.name }}
-          </p>
+          <div class="flex items-center gap-2 flex-wrap">
+            <p class="text-sm font-semibold text-highlighted truncate">
+              {{ client.name }}
+            </p>
+            <UBadge
+              v-if="isInactive"
+              size="sm"
+              variant="subtle"
+              color="neutral"
+              icon="i-lucide-user-x"
+              label="Inactivo"
+            />
+          </div>
           <div
             v-if="client.phone"
             class="flex items-center gap-1.5 mt-0.5 min-w-0"
@@ -69,6 +95,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
           size="sm"
           variant="link"
           color="neutral"
+          aria-label="Más acciones"
           class="cursor-pointer shrink-0"
         />
       </UDropdownMenu>

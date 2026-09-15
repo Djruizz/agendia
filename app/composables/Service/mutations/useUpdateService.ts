@@ -19,6 +19,8 @@ export const useUpdateService = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["public-services"] });
     },
   });
 };

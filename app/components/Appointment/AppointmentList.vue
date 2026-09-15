@@ -17,6 +17,7 @@ const emit = defineEmits<{
   delete: [appointment: AppointmentWithRelations];
   restore: [appointment: AppointmentWithRelations];
   reagendar: [appointment: AppointmentWithRelations];
+  create: [];
 }>();
 
 const statusFilter = defineModel<AppointmentStatusFilter>("statusFilter", {
@@ -111,7 +112,19 @@ watch(statusFilter, (value) => emit("statusChange", value));
       >
         <UIcon name="i-lucide-calendar-x" class="size-8 text-dimmed" />
       </div>
-      <p class="text-muted text-sm">No se encontraron citas</p>
+      <p class="text-muted text-sm">
+        {{
+          statusFilter === "ALL"
+            ? "Aún no tienes citas registradas"
+            : "No se encontraron citas"
+        }}
+      </p>
+      <UButton
+        v-if="statusFilter === 'ALL'"
+        label="Crear mi primera cita"
+        icon="i-lucide-plus"
+        @click="emit('create')"
+      />
     </div>
 
     <div v-else class="space-y-4 px-1">
