@@ -11,15 +11,13 @@ const items = computed<NavigationMenuItem[]>(() => [
 
 <template>
   <div class="min-h-screen flex flex-col">
-    <UHeader>
+    <UHeader title="Agendia" to="/">
       <template #title>
-        <NuxtLink to="/">
-          <img
-            src="/agendia-text-transparent.png"
-            alt="Agendia"
-            class="rounded-xl h-10"
-          />
-        </NuxtLink>
+        <img
+          src="/agendia-logo-text.png"
+          alt="Agendia"
+          class="rounded-xl h-10"
+        />
       </template>
 
       <UNavigationMenu :items="items" />

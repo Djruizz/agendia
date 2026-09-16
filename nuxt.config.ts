@@ -11,6 +11,14 @@ export default defineNuxtConfig({
   imports: {
     dirs: ["composables/**", "types/**"],
   },
+  // Lucide se resuelve localmente vía @iconify-json/lucide: sin fetch a
+  // api.iconify.design en dev/build/SSR (determinístico, iconos embebidos
+  // en el prerender y sin mismatch de hidratación).
+  icon: {
+    serverBundle: {
+      collections: ["lucide"],
+    },
+  },
   supabase: {
     redirect: false,
   },
