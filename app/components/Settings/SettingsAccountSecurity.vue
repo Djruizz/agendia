@@ -62,7 +62,7 @@ async function saveEmail(event: FormSubmitEvent<ChangeEmailSchema>) {
     toast.add({
       icon: "i-lucide-x",
       title: "No se pudo cambiar el email",
-      description: err?.message ?? "Error inesperado",
+      description: describeAuthError(err).description,
       color: "error",
     });
   } finally {
@@ -107,7 +107,7 @@ async function savePassword(event: FormSubmitEvent<ChangePasswordSchema>) {
     toast.add({
       icon: "i-lucide-x",
       title: "No se pudo cambiar la contraseña",
-      description: err?.message ?? "Error inesperado",
+      description: describeAuthError(err).description,
       color: "error",
     });
   } finally {

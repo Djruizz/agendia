@@ -79,6 +79,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
             icon="i-lucide-settings"
             color="neutral"
             variant="ghost"
+            aria-label="Configuración"
             class="cursor-pointer"
           />
         </UDropdownMenu>

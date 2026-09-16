@@ -3,13 +3,22 @@ definePageMeta({
   layout: "workspace",
   middleware: ["auth", "onboarding"],
 });
-const { data: services, isFetching, refetch } = useServices();
+const {
+  data: services,
+  isFetching,
+  isError,
+  refetch,
+  activeFilter,
+} = useServices();
 
 const openModal = ref(false);
 const serviceToEdit = ref<Service | null>(null);
 
 const openDeleteModal = ref(false);
 const serviceToDelete = ref<Service | null>(null);
+
+const { mutateAsync: updateService, isPending: restoring } = useUpdateService();
+const toast = useToast();
 
 function openModalFn(service?: Service) {
   serviceToEdit.value = service ?? null;
@@ -19,6 +28,25 @@ function openModalFn(service?: Service) {
 function openDeleteModalFn(service: Service) {
   serviceToDelete.value = service;
   openDeleteModal.value = true;
+}
+
+async function onRestore(service: Service) {
+  try {
+    await updateService({ id: service.id, service: { is_active: true } });
+    toast.add({
+      title: "Servicio reactivado",
+      description: `${service.name} volvió a tu lista y a tu página pública`,
+      color: "success",
+      icon: "i-lucide-check-circle",
+    });
+  } catch (err: any) {
+    toast.add({
+      title: "Error",
+      description: describeMutationError(err),
+      color: "error",
+      icon: "i-lucide-alert-circle",
+    });
+  }
 }
 </script>
 
@@ -34,17 +62,33 @@ function openDeleteModalFn(service: Service) {
           icon="i-lucide-refresh-cw"
           variant="link"
           color="neutral"
+          aria-label="Actualizar"
           :class="{ 'animate-spin': isFetching }"
           @click="refetch()"
         />
-        <UButton icon="i-lucide-plus" size="lg" @click="openModalFn()" />
+        <UButton
+          icon="i-lucide-plus"
+          size="lg"
+          aria-label="Nuevo servicio"
+          :disabled="restoring"
+          @click="openModalFn()"
+        />
       </template>
     </LayoutPageHeader>
+    <AppQueryErrorState
+      v-if="isError"
+      title="No pudimos cargar tus servicios"
+      @retry="refetch()"
+    />
     <ServiceList
+      v-else
+      v-model:active-filter="activeFilter"
       :services="services || []"
       :loading="isFetching"
       @edit="openModalFn"
       @delete="openDeleteModalFn"
+      @restore="onRestore"
+      @create="openModalFn()"
     />
     <ServiceModal
       v-model:open="openModal"

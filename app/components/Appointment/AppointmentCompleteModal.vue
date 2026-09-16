@@ -24,6 +24,15 @@ watch(
 
 async function onConfirm() {
   if (!props.appointment) return;
+  if (typeof price.value === "number" && price.value < 0) {
+    toast.add({
+      title: "Precio inválido",
+      description: "El precio no puede ser negativo",
+      color: "error",
+      icon: "i-lucide-alert-circle",
+    });
+    return;
+  }
   try {
     await updateAppointment({
       id: props.appointment.id,
@@ -43,7 +52,7 @@ async function onConfirm() {
   } catch (err: any) {
     toast.add({
       title: "Error",
-      description: err?.message || "Ocurrió un error inesperado",
+      description: describeMutationError(err),
       color: "error",
       icon: "i-lucide-alert-circle",
     });

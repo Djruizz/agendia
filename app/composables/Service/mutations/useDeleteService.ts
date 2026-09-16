@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import { FriendlyError } from "~/utils/mutationErrors";
 
 export const useDeleteService = () => {
   const supabase = useSupabaseClient();
@@ -8,16 +9,17 @@ export const useDeleteService = () => {
     mutationFn: async (id: string) => {
       const { data: rows, error } = await supabase
         .from("services")
-        .delete()
+        .update({ is_active: false })
         .eq("id", id)
         .eq("professional_id", user.value!.sub)
         .select("id");
       if (error) throw error;
-      if (!rows?.length) throw new Error("No autorizado");
+      if (!rows?.length) throw new FriendlyError("No autorizado");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["public-services"] });
     },
   });
 };

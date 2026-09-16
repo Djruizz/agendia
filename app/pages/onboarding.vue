@@ -71,7 +71,7 @@ async function onServiceSubmit(payload: ServiceSchema) {
     finishing.value = false;
     toast.add({
       title: "Error",
-      description: err?.message ?? "Ocurrió un error inesperado",
+      description: describeMutationError(err),
       color: "error",
       icon: "i-lucide-alert-circle",
     });
@@ -93,7 +93,7 @@ async function onSkipService() {
     finishing.value = false;
     toast.add({
       title: "Error",
-      description: err?.message ?? "Ocurrió un error inesperado",
+      description: describeMutationError(err),
       color: "error",
       icon: "i-lucide-alert-circle",
     });
@@ -114,7 +114,7 @@ async function onSkipAll() {
     finishing.value = false;
     toast.add({
       title: "Error",
-      description: err?.message ?? "Ocurrió un error inesperado",
+      description: describeMutationError(err),
       color: "error",
       icon: "i-lucide-alert-circle",
     });

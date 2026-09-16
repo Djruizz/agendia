@@ -136,7 +136,7 @@ async function saveMessages(event: FormSubmitEvent<WhatsAppMessagesForm>) {
     toast.add({
       icon: "i-lucide-x",
       title: "No se pudieron guardar los mensajes",
-      description: err?.message ?? "Error inesperado",
+      description: describeMutationError(err),
       color: "error",
     });
   }

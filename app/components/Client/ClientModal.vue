@@ -38,7 +38,7 @@ async function onSubmit(payload: ClientSchema) {
   } catch (err: any) {
     toast.add({
       title: "Error",
-      description: err?.message || "Ocurrió un error inesperado",
+      description: describeMutationError(err),
       color: "error",
       icon: "i-lucide-alert-circle",
     });

@@ -8,10 +8,14 @@ definePageMeta({
 const route = useRoute();
 const slug = computed(() => String(route.params.slug ?? ""));
 
-const { data: business, isFetching: loading } = usePublicBusiness(slug);
-const { data: services, isFetching: servicesLoading } = usePublicServices(
-  computed(() => business.value?.user_id),
-);
+const { data: business, isFetching: loading, isError, refetch } =
+  usePublicBusiness(slug);
+const {
+  data: services,
+  isFetching: servicesLoading,
+  isError: servicesError,
+  refetch: refetchServices,
+} = usePublicServices(computed(() => business.value?.user_id));
 
 const logoUrl = useLogoPublicUrl(
   computed(() => business.value?.logo_path ?? null),
@@ -64,6 +68,13 @@ onUnmounted(() => {
       <USkeleton class="h-11 w-full" />
     </div>
 
+    <AppQueryErrorState
+      v-else-if="isError"
+      title="No pudimos cargar este negocio"
+      description="Revisa tu conexión e inténtalo de nuevo."
+      @retry="refetch()"
+    />
+
     <div v-else-if="!business" class="text-center py-12 space-y-3">
       <UIcon name="i-lucide-store" class="size-10 text-muted mx-auto" />
       <p class="text-base font-medium text-highlighted">
@@ -89,6 +100,11 @@ onUnmounted(() => {
         v-if="services && services.length > 0"
         :services="services"
         :loading="servicesLoading"
+      />
+      <AppQueryErrorState
+        v-else-if="servicesError"
+        title="No pudimos cargar los servicios"
+        @retry="refetchServices()"
       />
     </template>
   </UContainer>

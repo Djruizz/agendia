@@ -173,7 +173,7 @@ create policy "public_read_published" on public.business_profiles
 
 ### Archivos
 
-- `supabase/migrations/20260902_business_profiles_category.sql` — agregada columna `category text`.
+- `supabase/migrations/20260902100200_business_profiles_category.sql` — agregada columna `category text`.
 - `app/middleware/onboarding.ts`
 - `app/pages/onboarding.vue` — layout `auth`, orquestra mutaciones directo (sin Manager: 1 consumidor).
 - `app/components/Business/BusinessOnboardingForm.vue` — presentacional (rol 1), reusa `ServiceForm.vue` para el paso 2.
@@ -316,7 +316,7 @@ create policy "public_read_published" on public.business_profiles
 ### Decisiones
 
 - **Acceso para el dueño pre-publicación**: `usePublicBusiness` no filtra `is_published` — la RLS decide: anon recibe `null` si el negocio no está publicado; el **dueño logueado sí ve su propio perfil** aunque esté en borrador → el botón "Vista previa" funciona antes de activar la publicación. Sin código condicional en el cliente.
-- **Policy de services** (`20260902_services_public_read.sql`): `for select using (is_active = true and exists (select 1 from business_profiles where user_id = services.professional_id and is_published = true))`. El subquery en la policy corre con privilegios del owner → bypassa RLS de `business_profiles`, sin recursión. Es OR con la policy propia del dueño → no la afecta.
+- **Policy de services** (`20260902100400_services_public_read.sql`): `for select using (is_active = true and exists (select 1 from business_profiles where user_id = services.professional_id and is_published = true))`. El subquery en la policy corre con privilegios del owner → bypassa RLS de `business_profiles`, sin recursión. Es OR con la policy propia del dueño → no la afecta.
 - **Estado "no disponible"** inline (no 404 duro): mantiene el layout público + link a la landing. Más amigable y consistente con el SPA.
 - **Sección de servicios**: oculta si no hay activos (header + contacto siguen siendo útiles).
 - **WhatsApp**: `https://wa.me/<digits>?text=Hola {nombre del negocio}, me interesa agendar una cita.` Teléfono sanitizado (solo dígitos). Botón solo se muestra si hay teléfono.

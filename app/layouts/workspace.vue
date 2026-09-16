@@ -1,5 +1,35 @@
 <script setup lang="ts">
 useApplyUserPreferences();
+
+const { isOnline } = useNetworkStatus();
+const toast = useToast();
+
+// Aviso persistente de offline (PWA): avisa antes de que fallen queries o
+// mutaciones por red. Complementa los QueryErrorState de cada vista.
+watch(
+  isOnline,
+  (online, wasOffline) => {
+    if (!online) {
+      toast.add({
+        id: "offline",
+        title: "Sin conexión",
+        description:
+          "No podrás guardar cambios hasta que vuelva la conexión. Tus datos ya guardados siguen disponibles.",
+        icon: "i-lucide-wifi-off",
+        color: "warning",
+        duration: Infinity,
+      });
+    } else if (wasOffline === false) {
+      toast.remove("offline");
+      toast.add({
+        title: "Conexión restablecida",
+        icon: "i-lucide-wifi",
+        color: "success",
+      });
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

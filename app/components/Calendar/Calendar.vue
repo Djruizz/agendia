@@ -79,6 +79,7 @@ const onSelectDay = (key: string) => {
         variant="ghost"
         color="neutral"
         size="sm"
+        aria-label="Mes anterior"
         @click="emit('prev')"
       />
       <h3 class="text-base font-semibold capitalize">
@@ -89,6 +90,7 @@ const onSelectDay = (key: string) => {
         variant="ghost"
         color="neutral"
         size="sm"
+        aria-label="Mes siguiente"
         @click="emit('next')"
       />
     </div>

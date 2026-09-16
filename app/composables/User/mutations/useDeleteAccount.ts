@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/vue-query";
+import { FriendlyError } from "~/utils/mutationErrors";
 
 export const useDeleteAccount = () => {
   const supabase = useSupabaseClient();
@@ -10,7 +11,7 @@ export const useDeleteAccount = () => {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) {
-        throw new Error("Tu sesión expiró. Vuelve a iniciar sesión.");
+        throw new FriendlyError("Tu sesión expiró. Vuelve a iniciar sesión.");
       }
 
       const res = await fetch(`${config.url}/functions/v1/delete-account`, {
@@ -29,7 +30,7 @@ export const useDeleteAccount = () => {
       } | null;
 
       if (!res.ok) {
-        throw new Error(body?.error ?? "No se pudo eliminar la cuenta");
+        throw new FriendlyError(body?.error ?? "No se pudo eliminar la cuenta");
       }
     },
   });

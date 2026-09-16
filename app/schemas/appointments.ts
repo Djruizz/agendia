@@ -12,7 +12,10 @@ export const appointmentSchema = z.object({
   status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELED"], {
     error: "Estado inválido",
   }),
-  price: z.number().optional(),
+  price: z
+    .number("El precio es inválido")
+    .min(0, "El precio no puede ser negativo")
+    .optional(),
   notes: z.string().optional(),
 });
 

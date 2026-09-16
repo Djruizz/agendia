@@ -10,10 +10,16 @@ const props = defineProps<{
 const emit = defineEmits<{
   edit: [client: Client];
   delete: [client: Client];
+  restore: [client: Client];
   loadMore: [];
   search: [value: string];
   sort: [value: "asc" | "desc"];
+  create: [];
 }>();
+
+const activeFilter = defineModel<"active" | "inactive">("activeFilter", {
+  default: "active",
+});
 
 const search = ref("");
 const sort = ref<"asc" | "desc">("asc");
@@ -22,6 +28,13 @@ const sortItems = [
   { label: "A - Z", value: "asc" as const, icon: "i-lucide-arrow-down-a-z" },
   { label: "Z - A", value: "desc" as const, icon: "i-lucide-arrow-up-a-z" },
 ];
+
+const filterItems = [
+  { label: "Activos", value: "active" as const, icon: "i-lucide-user-check" },
+  { label: "Inactivos", value: "inactive" as const, icon: "i-lucide-user-x" },
+];
+
+const isSearching = computed(() => search.value.trim().length > 0);
 
 // Debounce casero para no machacar Supabase con cada tecla.
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
@@ -48,13 +61,23 @@ watch(sort, (value) => emit("sort", value));
         placeholder="Buscar por nombre"
         class="flex-1"
       />
-      <USelect
-        v-model="sort"
-        :items="sortItems"
-        item-label="label"
-        item-value="value"
-        class="sm:w-44"
-      />
+      <div class="flex gap-3">
+        <USelect
+          v-model="activeFilter"
+          :items="filterItems"
+          item-label="label"
+          item-value="value"
+          icon="i-lucide-filter"
+          class="flex-1 sm:w-40"
+        />
+        <USelect
+          v-model="sort"
+          :items="sortItems"
+          item-label="label"
+          item-value="value"
+          class="flex-1 sm:w-36"
+        />
+      </div>
     </div>
 
     <div
@@ -64,9 +87,26 @@ watch(sort, (value) => emit("sort", value));
       <div
         class="flex items-center justify-center size-16 rounded-2xl bg-muted"
       >
-        <UIcon name="i-lucide-search-x" class="size-8 text-dimmed" />
+        <UIcon
+          :name="activeFilter === 'inactive' ? 'i-lucide-user-x' : 'i-lucide-search-x'"
+          class="size-8 text-dimmed"
+        />
       </div>
-      <p class="text-muted text-sm">No se encontraron clientes</p>
+      <p class="text-muted text-sm">
+        {{
+          activeFilter === "inactive"
+            ? "No tienes clientes inactivos"
+            : isSearching
+              ? "No se encontraron clientes"
+              : "Aún no tienes clientes registrados"
+        }}
+      </p>
+      <UButton
+        v-if="!isSearching && activeFilter === 'active'"
+        label="Crear mi primer cliente"
+        icon="i-lucide-user-plus"
+        @click="emit('create')"
+      />
     </div>
 
     <div v-else class="space-y-4">
@@ -78,6 +118,7 @@ watch(sort, (value) => emit("sort", value));
           show-actions
           @edit="emit('edit', $event)"
           @delete="emit('delete', $event)"
+          @restore="emit('restore', $event)"
         />
       </div>
 

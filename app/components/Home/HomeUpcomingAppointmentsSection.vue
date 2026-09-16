@@ -2,7 +2,8 @@
 import type { AppointmentWithRelations } from "~/types/appointments";
 
 const { localDayKey } = DateUtils();
-const { data: upcoming, isFetching } = useUpcomingAppointments();
+const { data: upcoming, isFetching, isError, refetch } =
+  useUpcomingAppointments();
 
 function onAppointmentClick(appointment: AppointmentWithRelations) {
   const dateKey = localDayKey(new Date(appointment.date));
@@ -27,6 +28,17 @@ function onAppointmentClick(appointment: AppointmentWithRelations) {
 
     <div v-if="isFetching" class="grid gap-3">
       <USkeleton v-for="i in 3" :key="i" class="h-24 rounded-xl" />
+    </div>
+
+    <div
+      v-else-if="isError"
+      class="rounded-xl bg-elevated/30"
+    >
+      <AppQueryErrorState
+        compact
+        title="No pudimos cargar tus próximas citas"
+        @retry="refetch()"
+      />
     </div>
 
     <div

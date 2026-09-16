@@ -32,7 +32,7 @@ Solo `typecheck` existe como check. No hay ESLint/Prettier ni test runner config
 ## Autenticación
 
 - Middleware global en `app/middleware/auth.ts` aplicado en cada `app/pages/workspace/*.vue` vía `definePageMeta({ middleware: ["auth", "onboarding"] })`.
-- `app/middleware/onboarding.ts` chequea `business_profiles` para el usuario; redirige a `/onboarding` (con `?redirect=...`) si no existe perfil. Lee/escribe la cache de TanStack vía `useNuxtApp().$queryClient` (los composables de vue-query no funcionan en middleware — `inject()` sin instancia de componente). El plugin `app/plugins/vue-query.ts` hace `nuxt.provide("queryClient", ...)` para exponerlo.
+- `app/middleware/onboarding.ts` chequea `business_profiles` para el usuario; redirige a `/onboarding` (con `?redirect=...`) si no existe perfil. **Fail-closed**: reintenta el chequeo (2 intentos, 500ms) y si persiste el fallo lanza `createError` fatal → página de error global. Lee/escribe la cache de TanStack vía `useNuxtApp().$queryClient` (los composables de vue-query no funcionan en middleware — `inject()` sin instancia de componente). El plugin `app/plugins/vue-query.ts` hace `nuxt.provide("queryClient", ...)` para exponerlo.
 - `supabase.redirect = false` en `nuxt.config.ts`: el middleware hace el `navigateTo("/login")` manualmente.
 - Si la sesión no está en storage pero hay usuario en `useSupabaseUser`, se rehidrata vía `supabase.auth.getSession()`.
 
@@ -63,9 +63,9 @@ Tres roles por dominio (`Appointment`, `Client`, `Service`):
 
 | Operación                | `Appointment`          | `Client`                       | `Service`             |
 | ------------------------ | ---------------------- | ------------------------------ | --------------------- |
-| Eliminar                 | **Hard delete** (`.delete()`) | **Soft delete** (`is_active = false`) | **Hard delete** (`.delete()`) |
-| "Recuperar"/restaurar    | `AppointmentUncancelModal` (CANCELED → PENDING, **no es restore real**) | Inexistente — se resetea `is_active` desde DB | Inexistente           |
-| Reusar copy "Podrás restaurarlo más tarde" | ❌ Solo aplica a Client (soft-delete) | ✅ | ❌ |
+| Eliminar                 | **Hard delete** (`.delete()`) | **Soft delete** (`is_active = false`) | **Soft delete** (`is_active = false`; invalida `["services"]`, `["appointments"]` y `["public-services"]`) |
+| "Recuperar"/restaurar    | `AppointmentUncancelModal` (CANCELED → PENDING, **no es restore real**) | **"Reactivar"** (`is_active = true` desde la página vía `useUpdateClient`; visible en filtro Inactivos) | **"Reactivar"** (`is_active = true` desde la página vía `useUpdateService`; visible en filtro Inactivos) |
+| Reusar copy "Podrás restaurarlo más tarde" | ❌ | ✅ ("Podrás reactivarlo más tarde desde el filtro de inactivos") | ✅ (mismo copy, restaurado junto a P2-8) |
 
 ### Acciones de cita sin modal de confirmación
 
@@ -93,8 +93,8 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
   - `composables/Dashboard/` — `queries/` agregadas (`useMonthAppointmentCount`, `useMonthRevenue`, `useTotalClients`, `useUpcomingAppointments`).
   - `composables/Business/` — `queries/` (`useBusinessProfile` autenticado, `usePublicBusiness` y `usePublicServices` para `/p/[slug]`), `mutations/` (`useCreateBusinessProfile`, `useUpdateBusinessProfile`), `utils/` (`useSlug.ts`: `generateSlug()` con strip de acentos NFD + `useSlugAvailability()` con debounce), `storage/` (`useUserLogo.ts`: `useUploadLogo`, `useRemoveLogo`, `useLogoPublicUrl`). Las mutaciones usan `setQueryData(["business-profile", user.sub])` en `onSuccess`. `useCreateBusinessProfile` acepta `Omit<BusinessProfileInsert, "user_id">` (la mutación inyecta `user_id`). El dominio `Business/storage/` se usa para el logo de `business_profiles.logo_path` (el antiguo composables/User/storage/ fue renombrado y queda deprecated). `business_profiles` también guarda `brand_color` (color del branding de la página pública — independiente de la preferencia personal `color_theme` de `user_preferences`).
   - `composables/User/` — `queries/` (`useUserPreferences`), `mutations/` (`useUpdateUserPreferences`), `utils/` (`useTimeFormat()`, `useApplyUserPreferences()`). El directorio `storage/` ya no existe aquí (movido a `Business/storage/`).
-  - `composables/shared/utils/` — helpers cross-domain: `DateUtils()` (factory pura, no reactiva), `useDateUtils()` (wrapper reactivo con `hour12` desde `useTimeFormat()`), `MoneyUtils()` (currency).
-  - **RPC de Postgres**: `is_slug_available(p_slug text)` en `public` (SECURITY DEFINER, expone solo un booleano). Usado por `useSlugAvailability` para chequear disponibilidad de slug en tiempo real (excluye fila propia: `user_id != auth.uid()`). El constraint unique sigue siendo la respuesta definitiva; el mapeo de `23505` en `useCreateBusinessProfile` / `useUpdateBusinessProfile` se mantiene como red de seguridad por condición de carrera. Creada en `supabase/migrations/20260902_is_slug_available.sql`.
+  - `composables/shared/utils/` — helpers cross-domain: `DateUtils()` (factory pura, no reactiva), `useDateUtils()` (wrapper reactivo con `hour12` desde `useTimeFormat()`), `MoneyUtils()` (currency), `useNetworkStatus()` (estado de red reactivo, listeners únicos a nivel módulo; usado por `layouts/workspace.vue` para el toast persistente "Sin conexión").
+  - **RPC de Postgres**: `is_slug_available(p_slug text)` en `public` (SECURITY DEFINER, expone solo un booleano). Usado por `useSlugAvailability` para chequear disponibilidad de slug en tiempo real (excluye fila propia: `user_id != auth.uid()`). El constraint unique sigue siendo la respuesta definitiva; el mapeo de `23505` en `useCreateBusinessProfile` / `useUpdateBusinessProfile` se mantiene como red de seguridad por condición de carrera. Creada en `supabase/migrations/20260902100300_is_slug_available.sql`.
   - Las mutaciones invalidan por queryKey raíz en `onSuccess` (ej. `["appointments"]` invalida list, day, counts).
   - **Estrategias de cache TanStack**: `setQueryData` en `onSuccess` para mutaciones que conocen el estado final (ej. `useUpdateUserPreferences` hace upsert + `select` y sabe el resultado). `invalidateQueries` para mutaciones que NO conocen el estado final o afectan múltiples queryKeys derivadas. Componentes Settings sin side effects imperativos (ej. `SettingsTimeFormat`) no necesitan rollback en `onError` — la cache no se mutó en error y un `computed` getter auto-revierte el UI. Componentes con side effects imperativos (ej. `SettingsColorSelect` muta `appConfig.ui.colors.primary` optimistic) SÍ requieren rollback explícito en `onError`.
 - **`@nuxt/ui` autoimports**: composables (`useToast`, `useSupabaseClient`, `useSupabaseUser`, `useInfiniteQuery`, etc.) están disponibles globalmente — no importarlos manualmente salvo tipos.
@@ -109,12 +109,12 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
 - **`useAppointmentsByDay`** devuelve relaciones con nombres singulares (`client:clients(*)`, `service:services(*)`), mientras que las demás queries usan plural (`clients:clients(*)`, `services:services(*)`). El tipo `AppointmentWithRelations` usa plural — el componente `Calendar` confía en esto porque `useAppointmentsByDay` no se castea a `AppointmentWithRelations`.
 - **`useAppointments`** existe pero **no lo usa ninguna página actual**. Los consumidores reales son `useInfiniteAppointments` (paginada), `useAppointmentsByDay` (calendario), `useAppointmentCounts` (badges del calendario).
 - **`workspace/index.vue`** (Dashboard) es un stub con un form de servicio hardcodeado — no es la verdadera página de dashboard. No agregar features esperando que se rendericen ahí.
-- **`ClientCard`** tiene un item de menú "Ver historial" que apunta a `/admin/clientes/{id}` — ruta **inexistente**. Si vas a habilitar historial, primero crear la ruta.
 - **`AppointmentForm`** auto-ajusta `duration_minutes` cuando se elige un servicio (default 30 si no hay servicio). Tiene lógica para preservar cliente/servicio inactivo en el select.
 - **`AppointmentCard` click** abre `AppointmentDetailDrawer`, pero **bloquea** la apertura si el cliente está inactivo (`is_active === false`) con un toast de error.
 - **Mutaciones invalidan por queryKey raíz** (ej. `["appointments"]` invalida todas las variantes: list, day, counts). Borrar una cita o servicio refresca también otras vistas automáticamente.
 - **`DateUtils()` es una factory pura** (no reactiva). Para componentes que muestran hora Y deben respetar la preferencia `time_format` del usuario, usar `useDateUtils()` — wrapper que inyecta `hour12` reactivo desde `useTimeFormat()`. `DateUtils()` directo es para composables que no muestran hora (`AppointmentActions` usa `formatDate`, `Calendar` usa `localDayKey`).
 - **Color de la página pública (`/p/[slug]`)**: la página hace snapshot de `appConfig.ui.colors.primary` al montar, aplica `business.brand_color` (validado contra `COLOR_THEMES`) y restaura el valor previo en `onUnmounted`. Aprovecha que el style `:root` de @nuxt/ui es reactivo a `appConfig.ui.colors`. No afecta a `useApplyUserPreferences()` (que solo corre en `layouts/workspace.vue`).
+- **Integridad DB**: las 4 tablas de dominio tienen FK `professional_id`/`user_id → auth.users ON DELETE CASCADE` (borrar la cuenta borra todo su data). Las FKs de `appointments` a `clients`/`services` son `ON DELETE RESTRICT` (desde `20260914_core_hardening.sql`) — un hard-delete SQL de cliente/servicio con citas falla por diseño; el soft-delete (`is_active = false`) es el único camino. Los triggers `set_updated_at` y `touch_client_updated_at` (versionados en `20260901_core_tables.sql`) mantienen `updated_at` automáticamente — no setearlo manualmente en updates.
 
 ## Estructura
 
@@ -144,10 +144,18 @@ app/
   types/{database.types,appointments,clients,services,preferences,business}.ts
 supabase/
   .temp/linked-project.json                  # generado por Supabase CLI
+  README.md                                  # notas de infra: rename de migrations, repair
+                                             # del historial remoto (completado 2026-09-15),
+                                             # contrato de la Edge Function delete-account,
+                                             # dev local con Docker
   migrations/                                # fuente de verdad para schema de DB
+                                             # (prefijos con timestamp completo y único desde 2026-09-15;
+                                             #  core recuperada de prod: 20260901_core_tables.sql;
+                                             #  20260914_core_hardening.sql aplicado vía SQL editor)
   # Edge Function "delete-account" (borrado de cuenta desde Settings) NO vive en el
   # repo: se gestiona desde el dashboard de Supabase (verify JWT desactivado — el
-  # JWT se valida manualmente dentro del código de la función).
+  # JWT se valida manualmente dentro del código de la función). Contrato completo
+  # en supabase/README.md.
 ```
 
 ## Verificación

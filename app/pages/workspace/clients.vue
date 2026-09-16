@@ -9,8 +9,10 @@ const {
   hasNextPage,
   isFetchingNextPage,
   isFetching,
+  isError,
   searchTerm,
   sortOrder,
+  activeFilter,
   refetch,
   fetchNextPage,
 } = useInfiniteClients();
@@ -29,6 +31,9 @@ const editModalOpen = ref(false);
 const deleteModalOpen = ref(false);
 const selectedClient = ref<Client | undefined>(undefined);
 
+const { mutateAsync: updateClient, isPending: restoring } = useUpdateClient();
+const toast = useToast();
+
 const onEdit = (client: Client) => {
   selectedClient.value = client;
   editModalOpen.value = true;
@@ -40,6 +45,24 @@ const onDelete = (client: Client) => {
 const onCreate = () => {
   selectedClient.value = undefined;
   editModalOpen.value = true;
+};
+const onRestore = async (client: Client) => {
+  try {
+    await updateClient({ id: client.id, client: { is_active: true } });
+    toast.add({
+      title: "Cliente reactivado",
+      description: `${client.name} volvió a la lista de activos`,
+      color: "success",
+      icon: "i-lucide-check-circle",
+    });
+  } catch (err: any) {
+    toast.add({
+      title: "Error",
+      description: describeMutationError(err),
+      color: "error",
+      icon: "i-lucide-alert-circle",
+    });
+  }
 };
 </script>
 
@@ -55,13 +78,27 @@ const onCreate = () => {
           icon="i-lucide-refresh-cw"
           variant="link"
           color="neutral"
+          aria-label="Actualizar"
           :class="{ 'animate-spin': isFetching }"
           @click="refetch()"
         />
-        <UButton icon="i-lucide-user-plus" size="lg" @click="onCreate" />
+        <UButton
+          icon="i-lucide-user-plus"
+          size="lg"
+          aria-label="Nuevo cliente"
+          :disabled="restoring"
+          @click="onCreate"
+        />
       </template>
     </LayoutPageHeader>
+    <AppQueryErrorState
+      v-if="isError"
+      title="No pudimos cargar tus clientes"
+      @retry="refetch()"
+    />
     <ClientList
+      v-else
+      v-model:active-filter="activeFilter"
       :clients="clientsList"
       :loading="isFetching"
       :has-more="hasNextPage"
@@ -70,7 +107,9 @@ const onCreate = () => {
       @sort="onSort"
       @edit="onEdit"
       @delete="onDelete"
+      @restore="onRestore"
       @loadMore="fetchNextPage"
+      @create="onCreate"
     />
 
     <ClientModal

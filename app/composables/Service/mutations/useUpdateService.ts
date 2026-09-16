@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import { FriendlyError } from "~/utils/mutationErrors";
 export const useUpdateService = () => {
   const supabase = useSupabaseClient();
   const queryClient = useQueryClient();
@@ -14,10 +15,12 @@ export const useUpdateService = () => {
         .eq("professional_id", user.value!.sub)
         .select("id");
       if (error) throw error;
-      if (!rows?.length) throw new Error("No autorizado");
+      if (!rows?.length) throw new FriendlyError("No autorizado");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["public-services"] });
     },
   });
 };
