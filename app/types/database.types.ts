@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      allowed_emails: {
+        Row: {
+          added_by: string
+          email: string
+          invited_at: string
+          registered_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          added_by?: string
+          email: string
+          invited_at?: string
+          registered_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          added_by?: string
+          email?: string
+          invited_at?: string
+          registered_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           client_id: string
@@ -131,7 +155,7 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
-          professional_id: string | null
+          professional_id: string
           updated_at: string | null
         }
         Insert: {
@@ -142,7 +166,7 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
-          professional_id?: string | null
+          professional_id: string
           updated_at?: string | null
         }
         Update: {
@@ -153,7 +177,7 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
-          professional_id?: string | null
+          professional_id?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -167,7 +191,7 @@ export type Database = {
           is_active: boolean
           name: string
           price: number | null
-          professional_id: string | null
+          professional_id: string
         }
         Insert: {
           created_at?: string | null
@@ -177,7 +201,7 @@ export type Database = {
           is_active?: boolean
           name: string
           price?: number | null
-          professional_id?: string | null
+          professional_id: string
         }
         Update: {
           created_at?: string | null
@@ -187,7 +211,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           price?: number | null
-          professional_id?: string | null
+          professional_id?: string
         }
         Relationships: []
       }

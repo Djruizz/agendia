@@ -1,7 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
   layout: "auth",
-  middleware: "guest",
 });
 
 const route = useRoute();
@@ -19,8 +18,8 @@ function fail(message: string) {
 function succeed() {
   status.value = "success";
   toast.add({
-    title: "Cuenta confirmada",
-    description: "¡Bienvenido a Agendia!",
+    title: "Email actualizado",
+    description: "Tu correo se actualizó correctamente",
     icon: "i-lucide-circle-check",
     color: "success",
   });
@@ -39,55 +38,33 @@ onMounted(async () => {
         desc.toLowerCase().includes("expired") ||
           desc.toLowerCase().includes("used")
           ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
-          : `No se pudo confirmar tu cuenta: ${desc}`,
+          : `No se pudo confirmar tu nuevo correo: ${desc}`,
       );
       return;
     }
 
     const tokenHash = route.query.token_hash as string | undefined;
-    if (tokenHash) {
-      const { error } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: "signup",
-      });
-      if (error) {
-        fail(
-          error.message.includes("expired") || error.message.includes("used")
-            ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
-            : "No se pudo confirmar tu cuenta.",
-        );
-        return;
-      }
-
-      await succeed();
-      return;
-    }
-
-    const code = route.query.code as string | undefined;
-    if (code) {
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) {
-        fail(
-          error.message.includes("expired") || error.message.includes("used")
-            ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
-            : "No se pudo confirmar tu cuenta.",
-        );
-        return;
-      }
-
-      await succeed();
-      return;
-    }
-
-    const { data, error } = await supabase.auth.getSession();
-    if (error || !data.session) {
+    if (!tokenHash) {
       fail("Enlace de confirmación inválido o ya utilizado.");
+      return;
+    }
+
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: "email_change",
+    });
+    if (error) {
+      fail(
+        error.message.includes("expired") || error.message.includes("used")
+          ? "El enlace expiró o ya fue usado. Solicita uno nuevo desde Configuración."
+          : "No se pudo confirmar tu nuevo correo.",
+      );
       return;
     }
 
     await succeed();
   } catch {
-    fail("Ocurrió un error inesperado al confirmar tu cuenta.");
+    fail("Ocurrió un error inesperado al confirmar tu correo.");
   }
 });
 </script>
@@ -100,7 +77,7 @@ onMounted(async () => {
           name="i-lucide-loader-circle"
           class="size-8 animate-spin text-primary mx-auto"
         />
-        <p class="text-sm text-muted">Confirmando tu cuenta...</p>
+        <p class="text-sm text-muted">Confirmando tu nuevo correo...</p>
       </template>
 
       <template v-else-if="status === 'success'">
@@ -110,7 +87,7 @@ onMounted(async () => {
           <UIcon name="i-lucide-circle-check" class="size-7" />
         </div>
         <div class="space-y-1">
-          <h2 class="text-lg font-semibold text-default">Cuenta confirmada</h2>
+          <h2 class="text-lg font-semibold text-default">Email actualizado</h2>
           <p class="text-sm text-muted">Redirigiéndote a tu workspace...</p>
         </div>
       </template>
@@ -128,10 +105,10 @@ onMounted(async () => {
           <p class="text-sm text-muted">{{ errorMessage }}</p>
         </div>
         <UButton
-          to="/login"
+          to="/workspace"
           block
-          label="Ir a iniciar sesión"
-          icon="i-lucide-log-in"
+          label="Ir a Agendia"
+          icon="i-lucide-calendar"
         />
       </template>
     </div>
