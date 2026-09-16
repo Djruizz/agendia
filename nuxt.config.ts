@@ -21,7 +21,25 @@ export default defineNuxtConfig({
       sentryDsn: "",
     },
   },
-  ssr: false,
+  ssr: true,
+  // Híbrido: "/", "/terminos" y "/privacidad" se prerenderizan con HTML
+  // completo (SEO/og tags para WhatsApp); el resto de la app sigue siendo
+  // SPA. El hook evita que el crawler de prerender siga links hacia rutas
+  // del SPA (auth, onboarding, workspace, /p/**).
+  routeRules: {
+    "/": { ssr: true, prerender: true },
+    "/terminos": { ssr: true, prerender: true },
+    "/privacidad": { ssr: true, prerender: true },
+    "/**": { ssr: false },
+  },
+  hooks: {
+    "prerender:routes"({ routes }) {
+      routes.clear();
+      routes.add("/");
+      routes.add("/terminos");
+      routes.add("/privacidad");
+    },
+  },
   app: {
     head: {
       link: [

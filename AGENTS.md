@@ -1,6 +1,6 @@
 # Agendia — Guía de Arquitectura para Agentes
 
-App de agenda para profesionales (citas, clientes, servicios). SPA (Nuxt 4, `ssr: false`) sobre Supabase con cache de TanStack Query.
+App de agenda para profesionales (citas, clientes, servicios). Nuxt 4 sobre Supabase con cache de TanStack Query. Renderizado **híbrido**: `/`, `/terminos` y `/privacidad` se prerenderizan con HTML completo (SEO/og tags); el resto de la app es SPA (`ssr: false` vía `routeRules` + hook `prerender:routes` en `nuxt.config.ts`). No agregar rutas nuevas al prerender sin editar ese hook.
 
 ## Stack
 
@@ -115,6 +115,7 @@ La query se construye en `useInfiniteAppointments.ts` con `buildPseudoQuery` (`.
 - **`DateUtils()` es una factory pura** (no reactiva). Para componentes que muestran hora Y deben respetar la preferencia `time_format` del usuario, usar `useDateUtils()` — wrapper que inyecta `hour12` reactivo desde `useTimeFormat()`. `DateUtils()` directo es para composables que no muestran hora (`AppointmentActions` usa `formatDate`, `Calendar` usa `localDayKey`).
 - **Color de la página pública (`/p/[slug]`)**: la página hace snapshot de `appConfig.ui.colors.primary` al montar, aplica `business.brand_color` (validado contra `COLOR_THEMES`) y restaura el valor previo en `onUnmounted`. Aprovecha que el style `:root` de @nuxt/ui es reactivo a `appConfig.ui.colors`. No afecta a `useApplyUserPreferences()` (que solo corre en `layouts/workspace.vue`).
 - **Integridad DB**: las 4 tablas de dominio tienen FK `professional_id`/`user_id → auth.users ON DELETE CASCADE` (borrar la cuenta borra todo su data). Las FKs de `appointments` a `clients`/`services` son `ON DELETE RESTRICT` (desde `20260914_core_hardening.sql`) — un hard-delete SQL de cliente/servicio con citas falla por diseño; el soft-delete (`is_active = false`) es el único camino. Los triggers `set_updated_at` y `touch_client_updated_at` (versionados en `20260901_core_tables.sql`) mantienen `updated_at` automáticamente — no setearlo manualmente en updates.
+- **Landing prerenderizado**: los componentes `Landing/*` (secciones, mocks, reveal) son presentacionales 100% estáticos — sin queries ni Supabase — porque `/` se prerenderiza en build. `LandingReveal.vue` anima on-scroll con IntersectionObserver (client-only); su estado inicial es `opacity-0` en el HTML prerenderizado (SEO ok: el contenido queda en el DOM). Si una sección nueva necesita datos en vivo, NO pertenece al prerender. El año del footer del layout `landing` se hornea al build.
 
 ## Estructura
 
@@ -137,7 +138,7 @@ app/
       settings.vue         # Perfil negocio + Apariencia + Preferencias + Cuenta/seguridad
   middleware/{auth,onboarding,guest}.ts
   plugins/vue-query.ts     # provee queryClient via nuxt.provide (uso en middleware)
-  components/{Appointment,Client,Service,Calendar,Layout,Home,Settings,Business,Public}/
+  components/{Appointment,Client,Service,Calendar,Layout,Home,Settings,Business,Public,Landing}/
   composables/{Appointment,Client,Service,Business,User,Dashboard,shared}/
     cada dominio con queries/, mutations/, utils/, storage/ según aplique
   schemas/{auth,appointments,clients,services,preferences,business}.ts   # Zod
