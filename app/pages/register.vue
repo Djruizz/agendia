@@ -147,7 +147,7 @@ async function onSubmit(event: FormSubmitEvent<RegisterSchema>) {
       <UAuthForm
         :fields="fields"
         title="Crear cuenta"
-        description="Regístrate para empezar a gestionar tu agenda"
+          description="Regístrate para empezar a gestionar tu agenda (por ahora requiere invitación)"
         icon="i-lucide-user-plus"
         :schema="registerSchema"
         :loading="loading"

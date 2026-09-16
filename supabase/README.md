@@ -69,3 +69,32 @@ Supabase (Edge Functions → delete-account).
 3. Mantener "Verify JWT" desactivado en `config.toml` (`[functions.delete-account] verify_jwt = false`) o reactivarlo y simplificar la validación manual.
 
 Mientras viva solo en el dashboard: **cualquier cambio a la función debe hacerse ahí y documentarse en este archivo.**
+
+## Allowlist de registro (2026-09-15)
+
+`20260915100000_allowed_emails.sql` gatea el signup a nivel DB:
+
+- Trigger `BEFORE INSERT` en `auth.users` (`trg_signup_allowlist` → `public.assert_signup_allowed()`, SECURITY DEFINER): rechaza con `AGENDIA_SIGNUP_NOT_ALLOWED` (errcode 28000) cualquier email que no esté en `public.allowed_emails` (comparación case-insensitive). Fail-closed.
+- Trigger `AFTER INSERT` (`trg_signup_allowlist_audit` → `public.mark_signup_consumed()`): marca la invitación como consumida (`user_id`, `registered_at`) — auditoría de qué invitaciones se usaron.
+- `allowed_emails` tiene RLS habilitado **sin policies**: solo postgres / service role la tocan.
+- Los emails ya registrados al momento del deploy fueron sembrados con `added_by = 'seed'` (pueden re-registrarse si borran su cuenta). Usuarios existentes: cero impacto (el login no pasa por INSERT).
+
+### Dar / quitar permiso (manual, SQL editor)
+
+```sql
+-- Invitar
+insert into public.allowed_emails (email) values ('correo@ejemplo.com');
+
+-- Revocar (solo previene registros futuros; no afecta cuentas existentes)
+delete from public.allowed_emails where email = 'correo@ejemplo.com';
+
+-- Ver invitaciones y su uso
+select email, added_by, invited_at, registered_at, user_id
+from public.allowed_emails order by invited_at desc;
+```
+
+### Consideraciones
+
+- El trigger bloquea **todos** los inserts en `auth.users`, incluyendo los del service role (dashboard "Add user" / `auth.admin.createUser`). El flujo post-compra futuro debe insertar primero en `allowed_emails (added_by = 'purchase')` y después crear el usuario — el orden importa.
+- El error del trigger puede llegar al cliente como mensaje custom o como el genérico `Database error saving new user` (GoTrue suele tragar el detalle); `describeAuthError` (app/utils/authErrors.ts) mapea ambos patrones a `signup-not-allowed`.
+- Registro abierto (lanzamiento público): dropear `trg_signup_allowlist` (y opcionalmente `trg_signup_allowlist_audit` + la tabla). El mapeo de error en `authErrors.ts` puede quedarse inofensivo.

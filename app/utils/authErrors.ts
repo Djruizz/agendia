@@ -4,6 +4,7 @@ export type AuthErrorCode =
   | "email-not-confirmed"
   | "email-taken"
   | "rate-limit"
+  | "signup-not-allowed"
   | "unknown";
 
 export interface AuthErrorFeedback {
@@ -65,6 +66,20 @@ export function describeAuthError(error: unknown): AuthErrorFeedback {
       description: "Espera unos momentos antes de intentar de nuevo.",
       icon: "i-lucide-hourglass",
       color: "warning",
+    };
+  }
+  // GoTrue suele tragar el mensaje custom del trigger de allowlist y devolver
+  // el genérico "Database error saving new user" — se mapean ambos patrones.
+  if (
+    /agendia_signup_not_allowed|database error saving new user/i.test(message)
+  ) {
+    return {
+      code: "signup-not-allowed",
+      title: "Registro restringido",
+      description:
+        "Agendia está en acceso por invitación. Necesitas permiso para crear una cuenta.",
+      icon: "i-lucide-user-x",
+      color: "error",
     };
   }
   return {
