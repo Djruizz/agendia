@@ -4,6 +4,12 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", sans-serif;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
 /* @theme static {
   --color-red-500: var(--color-red-500);
   --color-orange-500: var(--color-orange-500);

@@ -24,6 +24,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.132",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.10"
   }
