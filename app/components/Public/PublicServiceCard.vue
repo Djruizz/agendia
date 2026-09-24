@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const props = defineProps<{
   service: Service;
+  businessName?: string;
+  businessPhone?: string | null;
 }>();
 
 const formattedDuration = computed(() => {
@@ -16,6 +18,19 @@ const { formatCurrency } = MoneyUtils();
 const formattedPrice = computed(() =>
   props.service.price == null ? null : formatCurrency(props.service.price),
 );
+
+const whatsappUrl = computed(() => {
+  if (!props.businessPhone) return null;
+  const digits = props.businessPhone.replace(/[^\d]/g, "");
+  if (!digits) return null;
+  // const detail = formattedPrice.value
+  //   ? `${formattedDuration.value} - ${formattedPrice.value}`
+  //   : formattedDuration.value;
+  const text = encodeURIComponent(
+    `Hola ${props.businessName ?? "el negocio"}, me interesa agendar: ${props.service.name}. ¿Qué horarios tienes disponibles?`,
+  );
+  return `https://wa.me/${digits}?text=${text}`;
+});
 </script>
 
 <template>
@@ -40,13 +55,23 @@ const formattedPrice = computed(() =>
           <span class="text-muted">{{ formattedDuration }}</span>
         </div>
         <div v-if="formattedPrice" class="flex items-center gap-1.5">
-          <UIcon
-            name="i-lucide-dollar-sign"
-            class="size-4 text-dimmed shrink-0"
-          />
-          <span class="font-medium text-highlighted">{{ formattedPrice }}</span>
+          <span class="font-medium text-highlighted"
+            >desde {{ formattedPrice }}</span
+          >
         </div>
       </div>
     </div>
+
+    <UButton
+      v-if="whatsappUrl"
+      :to="whatsappUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+      icon="i-lucide-message-circle"
+      label="Agendar"
+      color="primary"
+      class="w-full flex justify-center mt-4"
+      :aria-label="`Agendar ${service.name} por WhatsApp`"
+    />
   </UCard>
 </template>

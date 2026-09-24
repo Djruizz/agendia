@@ -18,6 +18,11 @@ const {
 const client = computed(() => clientData.value ?? undefined);
 
 const {
+  data: stats,
+  isFetching: statsLoading,
+} = useClientStats(() => clientId);
+
+const {
   data: paginated,
   hasNextPage,
   isFetchingNextPage,
@@ -155,6 +160,8 @@ const onRestore = async () => {
         @delete="onDelete"
         @restore="onRestore"
       />
+
+      <ClientStats :stats="stats" :loading="statsLoading" />
 
       <section class="space-y-4">
         <h2 class="text-base font-semibold text-highlighted">

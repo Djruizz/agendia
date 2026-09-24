@@ -2,6 +2,8 @@
 defineProps<{
   services: Service[];
   loading?: boolean;
+  businessName?: string;
+  businessPhone?: string | null;
 }>();
 </script>
 
@@ -21,6 +23,8 @@ defineProps<{
         v-for="service in services"
         :key="service.id"
         :service="service"
+        :business-name="businessName"
+        :business-phone="businessPhone"
       />
     </div>
   </div>

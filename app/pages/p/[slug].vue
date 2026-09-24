@@ -8,8 +8,12 @@ definePageMeta({
 const route = useRoute();
 const slug = computed(() => String(route.params.slug ?? ""));
 
-const { data: business, isFetching: loading, isError, refetch } =
-  usePublicBusiness(slug);
+const {
+  data: business,
+  isFetching: loading,
+  isError,
+  refetch,
+} = usePublicBusiness(slug);
 const {
   data: services,
   isFetching: servicesLoading,
@@ -40,7 +44,9 @@ const appConfig = useAppConfig();
 const previousColor = appConfig.ui.colors.primary as ColorTheme;
 
 watch(
-  () => (business.value as unknown as { brand_color?: string | null } | null)?.brand_color,
+  () =>
+    (business.value as unknown as { brand_color?: string | null } | null)
+      ?.brand_color,
   (color) => {
     if (color && (COLOR_THEMES as readonly string[]).includes(color)) {
       appConfig.ui.colors.primary = color as ColorTheme;
@@ -100,6 +106,8 @@ onUnmounted(() => {
         v-if="services && services.length > 0"
         :services="services"
         :loading="servicesLoading"
+        :business-name="business.business_name"
+        :business-phone="business.phone"
       />
       <AppQueryErrorState
         v-else-if="servicesError"
@@ -107,5 +115,10 @@ onUnmounted(() => {
         @retry="refetchServices()"
       />
     </template>
+
+    <PublicFloatingWhatsapp
+      v-if="business?.phone"
+      :phone-number="business.phone"
+    />
   </UContainer>
 </template>
