@@ -47,7 +47,7 @@ const onCreate = () => {
           @click="refetch()"
         />
         <UButton
-          icon="i-lucide-plus"
+          icon="i-lucide-calendar-plus"
           color="primary"
           size="lg"
           aria-label="Nueva cita"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AppointmentWithRelations } from "~/types/appointments";
+import type { Client } from "~/types/clients";
 
 const props = defineProps<{
   appointments: AppointmentWithRelations[];
@@ -7,6 +8,7 @@ const props = defineProps<{
   loadingMore?: boolean;
   hasMore?: boolean;
   showActions?: boolean;
+  defaultClient?: Client;
 }>();
 
 const emit = defineEmits<{
@@ -162,6 +164,7 @@ defineExpose({
       v-model:open="openFormModal"
       :mode="mode"
       :appointment="selectedAppointment"
+      :default-client="defaultClient"
     />
 
     <AppointmentDeleteModal

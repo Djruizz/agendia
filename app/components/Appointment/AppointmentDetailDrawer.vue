@@ -37,6 +37,12 @@ const clientName = computed(
   () => props.appointment?.clients?.name || "Sin cliente",
 );
 
+const clientDetailUrl = computed(() =>
+  props.appointment?.clients
+    ? `/workspace/clients/${props.appointment.clients.id}`
+    : null,
+);
+
 const serviceName = computed(
   () => props.appointment?.services?.name || "Sin servicio",
 );
@@ -232,7 +238,14 @@ function onDelete() {
           <UIcon :name="statusMeta.icon" class="size-5" />
         </div>
         <div class="min-w-0 flex-1">
-          <p class="text-base font-semibold text-highlighted truncate">
+          <NuxtLink
+            v-if="clientDetailUrl"
+            :to="clientDetailUrl"
+            class="text-base font-semibold text-highlighted truncate hover:text-primary transition-colors block"
+          >
+            {{ clientName }}
+          </NuxtLink>
+          <p v-else class="text-base font-semibold text-highlighted truncate">
             {{ clientName }}
           </p>
           <p class="text-xs text-muted truncate">{{ serviceName }}</p>

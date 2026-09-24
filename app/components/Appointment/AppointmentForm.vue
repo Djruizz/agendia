@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from "@nuxt/ui";
 import type { AppointmentWithRelations } from "~/types/appointments";
+import type { Client } from "~/types/clients";
 import {
   appointmentSchema,
   type AppointmentSchema,
@@ -9,6 +10,7 @@ import {
 const props = defineProps<{
   mode?: "create" | "edit";
   appointment?: AppointmentWithRelations;
+  defaultClient?: Client;
 }>();
 
 const emit = defineEmits<{
@@ -36,7 +38,7 @@ const initialDate = props.appointment?.date
   : new Date();
 
 const state = reactive<AppointmentSchema>({
-  client_id: "",
+  client_id: props.defaultClient?.id ?? "",
   service_id: undefined,
   date: localDayKey(initialDate),
   time: formatTimeInput(initialDate),
@@ -59,7 +61,7 @@ type ClientItem = {
 };
 const clientItems = computed(() => {
   const items: ClientItem[] = [];
-  const currentClient = props.appointment?.clients;
+  const currentClient = props.appointment?.clients ?? props.defaultClient;
   if (currentClient && !clients.value?.some((c) => c.id === currentClient.id)) {
     items.push({
       label: `${currentClient.name}`,
@@ -113,7 +115,7 @@ watch(
   () => props.appointment,
   (val) => {
     const d = val?.date ? new Date(val.date) : new Date();
-    state.client_id = val?.client_id ?? "";
+    state.client_id = val?.client_id ?? props.defaultClient?.id ?? "";
     state.service_id = val?.service_id ?? undefined;
     state.date = localDayKey(d);
     state.time = formatTimeInput(d);

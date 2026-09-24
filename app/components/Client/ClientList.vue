@@ -8,6 +8,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  open: [client: Client];
   edit: [client: Client];
   delete: [client: Client];
   restore: [client: Client];
@@ -117,6 +118,7 @@ watch(sort, (value) => emit("sort", value));
           :client="client"
           show-actions
           @edit="emit('edit', $event)"
+          @open="emit('open', $event)"
           @delete="emit('delete', $event)"
           @restore="emit('restore', $event)"
         />

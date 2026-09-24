@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Client } from "../../types/clients";
+import { type Client } from "~/types/clients";
 definePageMeta({
   layout: "workspace",
   middleware: ["auth", "onboarding"],
@@ -45,6 +45,9 @@ const onDelete = (client: Client) => {
 const onCreate = () => {
   selectedClient.value = undefined;
   editModalOpen.value = true;
+};
+const onOpen = (client: Client) => {
+  navigateTo(`/workspace/clients/${client.id}`);
 };
 const onRestore = async (client: Client) => {
   try {
@@ -105,6 +108,7 @@ const onRestore = async (client: Client) => {
       :loading-more="isFetchingNextPage"
       @search="onSearch"
       @sort="onSort"
+      @open="onOpen"
       @edit="onEdit"
       @delete="onDelete"
       @restore="onRestore"

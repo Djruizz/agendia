@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { AppointmentSchema } from "~/schemas/appointments";
 import type { AppointmentWithRelations } from "~/types/appointments";
+import type { Client } from "~/types/clients";
 
 const props = defineProps<{
   mode?: "create" | "edit";
   appointment?: AppointmentWithRelations;
+  defaultClient?: Client;
 }>();
 
 const open = defineModel<boolean>("open", { default: false });
@@ -74,7 +76,12 @@ async function onSubmit(payload: AppointmentSchema) {
     :ui="{ footer: 'justify-end' }"
   >
     <template #body>
-      <AppointmentForm :mode="mode" :appointment="appointment" @submit="onSubmit" />
+      <AppointmentForm
+        :mode="mode"
+        :appointment="appointment"
+        :default-client="defaultClient"
+        @submit="onSubmit"
+      />
     </template>
 
     <template #footer="{ close }">
