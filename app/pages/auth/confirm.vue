@@ -28,68 +28,111 @@ function succeed() {
 }
 
 onMounted(async () => {
-  try {
-    const urlError = route.query.error as string | undefined;
-    const urlErrorDescription = route.query.error_description as
-      | string
-      | undefined;
-    if (urlError) {
-      const desc = urlErrorDescription ?? urlError;
-      fail(
-        desc.toLowerCase().includes("expired") ||
-          desc.toLowerCase().includes("used")
-          ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
-          : `No se pudo confirmar tu cuenta: ${desc}`,
-      );
-      return;
-    }
+  // 1. Extraer parámetros tanto de la Query (?key=val) como del Fragmento (#key=val)
+  const queryParams = route.query;
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
-    const tokenHash = route.query.token_hash as string | undefined;
-    if (tokenHash) {
-      const { error } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: "signup",
-      });
-      if (error) {
-        fail(
-          error.message.includes("expired") || error.message.includes("used")
-            ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
-            : "No se pudo confirmar tu cuenta.",
-        );
-        return;
-      }
+  // Detectar errores enviados por Supabase
+  const error = queryParams.error || hashParams.get("error");
+  const errorCode = queryParams.error_code || hashParams.get("error_code");
+  const errorDesc =
+    queryParams.error_description || hashParams.get("error_description");
 
-      await succeed();
-      return;
-    }
-
-    const code = route.query.code as string | undefined;
-    if (code) {
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) {
-        fail(
-          error.message.includes("expired") || error.message.includes("used")
-            ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
-            : "No se pudo confirmar tu cuenta.",
-        );
-        return;
-      }
-
-      await succeed();
-      return;
-    }
-
-    const { data, error } = await supabase.auth.getSession();
-    if (error || !data.session) {
-      fail("Enlace de confirmación inválido o ya utilizado.");
-      return;
-    }
-
-    await succeed();
-  } catch {
-    fail("Ocurrió un error inesperado al confirmar tu cuenta.");
+  // CASO A: Fallo en la verificación
+  if (error || errorCode) {
+    fail((errorDesc as string) || "El enlace es inválido o ya fue utilizado.");
+    return;
   }
+
+  // CASO B: Flujo PKCE (viene un ?code=...)
+  const code = queryParams.code as string;
+  if (code) {
+    const { error: exchangeError } =
+      await supabase.auth.exchangeCodeForSession(code);
+    if (exchangeError) {
+      fail(exchangeError.message);
+      return;
+    }
+  }
+
+  // CASO C: Verificar sesión activa (válido para PKCE o Flujo Hash)
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
+  if (sessionError || !session) {
+    // Si no hay sesión ni error explícito, la URL fue abierta sin contexto
+    fail("No se encontró una sesión válida. Inicia sesión manualmente.");
+    return;
+  }
+
+  succeed();
 });
+
+// onMounted(async () => {
+//   try {
+//     const urlError = route.query.error as string | undefined;
+//     const urlErrorDescription = route.query.error_description as
+//       | string
+//       | undefined;
+//     if (urlError) {
+//       const desc = urlErrorDescription ?? urlError;
+//       fail(
+//         desc.toLowerCase().includes("expired") ||
+//           desc.toLowerCase().includes("used")
+//           ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
+//           : `No se pudo confirmar tu cuenta: ${desc}`,
+//       );
+//       return;
+//     }
+
+//     const tokenHash = route.query.token_hash as string | undefined;
+//     if (tokenHash) {
+//       const { error } = await supabase.auth.verifyOtp({
+//         token_hash: tokenHash,
+//         type: "signup",
+//       });
+//       if (error) {
+//         fail(
+//           error.message.includes("expired") || error.message.includes("used")
+//             ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
+//             : "No se pudo confirmar tu cuenta.",
+//         );
+//         return;
+//       }
+
+//       await succeed();
+//       return;
+//     }
+
+//     const code = route.query.code as string | undefined;
+//     if (code) {
+//       const { error } = await supabase.auth.exchangeCodeForSession(code);
+//       if (error) {
+//         fail(
+//           error.message.includes("expired") || error.message.includes("used")
+//             ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
+//             : "No se pudo confirmar tu cuenta.",
+//         );
+//         return;
+//       }
+
+//       await succeed();
+//       return;
+//     }
+
+//     const { data, error } = await supabase.auth.getSession();
+//     if (error || !data.session) {
+//       fail("Enlace de confirmación inválido o ya utilizado.");
+//       return;
+//     }
+
+//     await succeed();
+//   } catch {
+//     fail("Ocurrió un error inesperado al confirmar tu cuenta.");
+//   }
+// });
 </script>
 
 <template>
