@@ -6,6 +6,10 @@ const props = defineProps<{
 
 const open = defineModel<boolean>("open", { default: false });
 
+const emit = defineEmits<{
+  deleted: [client: Client];
+}>();
+
 const { mutateAsync: deleteClient, isPending: deleting } = useDeleteClient();
 const toast = useToast();
 
@@ -19,6 +23,7 @@ async function onConfirm() {
       color: "success",
       icon: "i-lucide-check-circle",
     });
+    emit("deleted", props.client);
     open.value = false;
   } catch (err: any) {
     toast.add({
