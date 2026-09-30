@@ -45,15 +45,15 @@ onMounted(async () => {
   }
 
   // CASO B: Flujo PKCE (viene un ?code=...)
-  const code = queryParams.code as string;
-  if (code) {
-    const { error: exchangeError } =
-      await supabase.auth.exchangeCodeForSession(code);
-    if (exchangeError) {
-      fail(exchangeError.message);
-      return;
-    }
-  }
+  // const code = queryParams.code as string;
+  // if (code) {
+  //   const { error: exchangeError } =
+  //     await supabase.auth.exchangeCodeForSession(code);
+  //   if (exchangeError) {
+  //     fail(exchangeError.message);
+  //     return;
+  //   }
+  // }
 
   // CASO C: Verificar sesión activa (válido para PKCE o Flujo Hash)
   const {
