@@ -1,7 +1,14 @@
 <script setup lang="ts">
+type EmailOtpType =
+  | "signup"
+  | "invite"
+  | "magiclink"
+  | "recovery"
+  | "email_change"
+  | "email";
+
 definePageMeta({
   layout: "auth",
-  middleware: "guest",
 });
 
 const route = useRoute();
@@ -11,12 +18,34 @@ const toast = useToast();
 const status = ref<"loading" | "success" | "error">("loading");
 const errorMessage = ref("");
 
+function cleanConfirmError(desc?: string | null): string {
+  if (!desc) return "El enlace es inválido o ya expiró.";
+  const lower = desc.toLowerCase();
+  if (lower.includes("expired") || lower.includes("expiró")) {
+    return "El enlace de confirmación expiró. Inicia sesión para solicitar uno nuevo.";
+  }
+  if (
+    lower.includes("used") ||
+    lower.includes("already") ||
+    lower.includes("usado")
+  ) {
+    return "El enlace ya fue utilizado o es inválido. Intenta iniciar sesión.";
+  }
+  if (
+    lower.includes("code_verifier") ||
+    lower.includes("both auth code and code verifier")
+  ) {
+    return "El enlace PKCE no se abrió en el mismo navegador. Solicita un nuevo correo de confirmación.";
+  }
+  return desc;
+}
+
 function fail(message: string) {
   status.value = "error";
   errorMessage.value = message;
 }
 
-function succeed() {
+async function succeed() {
   status.value = "success";
   toast.add({
     title: "Cuenta confirmada",
@@ -24,115 +53,98 @@ function succeed() {
     icon: "i-lucide-circle-check",
     color: "success",
   });
-  return navigateTo("/workspace", { replace: true });
+  await navigateTo("/workspace", { replace: true });
 }
 
 onMounted(async () => {
-  // 1. Extraer parámetros tanto de la Query (?key=val) como del Fragmento (#key=val)
-  const queryParams = route.query;
-  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  try {
+    const queryParams = route.query;
+    const rawHash = window.location.hash.replace(/^#/, "");
+    const hashParams = new URLSearchParams(rawHash);
 
-  // Detectar errores enviados por Supabase
-  const error = queryParams.error || hashParams.get("error");
-  const errorCode = queryParams.error_code || hashParams.get("error_code");
-  const errorDesc =
-    queryParams.error_description || hashParams.get("error_description");
+    // 1. Detectar errores explícitos devueltos por Supabase
+    const error = (queryParams.error as string) || hashParams.get("error");
+    const errorDesc =
+      (queryParams.error_description as string) ||
+      hashParams.get("error_description");
 
-  // CASO A: Fallo en la verificación
-  if (error || errorCode) {
-    fail((errorDesc as string) || "El enlace es inválido o ya fue utilizado.");
-    return;
+    if (error || errorDesc) {
+      fail(cleanConfirmError(errorDesc || error));
+      return;
+    }
+
+    // 2. Flujo recomendado: token_hash (Cross-device seguro)
+    const tokenHash =
+      (queryParams.token_hash as string) || hashParams.get("token_hash");
+    if (tokenHash) {
+      const type = ((queryParams.type as string) ||
+        hashParams.get("type") ||
+        "signup") as EmailOtpType;
+      const { error: otpError } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type,
+      });
+
+      if (otpError) {
+        fail(cleanConfirmError(otpError.message));
+        return;
+      }
+
+      await succeed();
+      return;
+    }
+
+    // 3. Fallback Flujo PKCE (?code=...)
+    const code = (queryParams.code as string) || hashParams.get("code");
+    if (code) {
+      const { error: exchangeError } =
+        await supabase.auth.exchangeCodeForSession(code);
+      if (exchangeError) {
+        fail(cleanConfirmError(exchangeError.message));
+        return;
+      }
+
+      await succeed();
+      return;
+    }
+
+    // 4. Fallback Implicit Flow (#access_token=...&refresh_token=...)
+    const accessToken = hashParams.get("access_token");
+    if (accessToken) {
+      const refreshToken = hashParams.get("refresh_token") || "";
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+
+      if (sessionError) {
+        fail(cleanConfirmError(sessionError.message));
+        return;
+      }
+
+      await succeed();
+      return;
+    }
+
+    // 5. Fallback a sesión activa previa
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+    if (session && !sessionError) {
+      await succeed();
+      return;
+    }
+
+    // 6. Sin parámetros de autenticación válidos
+    fail(
+      "No se encontraron datos de confirmación en el enlace. Inicia sesión o solicita un nuevo correo.",
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err ?? "");
+    fail(cleanConfirmError(msg));
   }
-
-  // CASO B: Flujo PKCE (viene un ?code=...)
-  // const code = queryParams.code as string;
-  // if (code) {
-  //   const { error: exchangeError } =
-  //     await supabase.auth.exchangeCodeForSession(code);
-  //   if (exchangeError) {
-  //     fail(exchangeError.message);
-  //     return;
-  //   }
-  // }
-
-  // CASO C: Verificar sesión activa (válido para PKCE o Flujo Hash)
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession();
-
-  if (sessionError || !session) {
-    // Si no hay sesión ni error explícito, la URL fue abierta sin contexto
-    fail("No se encontró una sesión válida. Inicia sesión manualmente.");
-    return;
-  }
-
-  succeed();
 });
-
-// onMounted(async () => {
-//   try {
-//     const urlError = route.query.error as string | undefined;
-//     const urlErrorDescription = route.query.error_description as
-//       | string
-//       | undefined;
-//     if (urlError) {
-//       const desc = urlErrorDescription ?? urlError;
-//       fail(
-//         desc.toLowerCase().includes("expired") ||
-//           desc.toLowerCase().includes("used")
-//           ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
-//           : `No se pudo confirmar tu cuenta: ${desc}`,
-//       );
-//       return;
-//     }
-
-//     const tokenHash = route.query.token_hash as string | undefined;
-//     if (tokenHash) {
-//       const { error } = await supabase.auth.verifyOtp({
-//         token_hash: tokenHash,
-//         type: "signup",
-//       });
-//       if (error) {
-//         fail(
-//           error.message.includes("expired") || error.message.includes("used")
-//             ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
-//             : "No se pudo confirmar tu cuenta.",
-//         );
-//         return;
-//       }
-
-//       await succeed();
-//       return;
-//     }
-
-//     const code = route.query.code as string | undefined;
-//     if (code) {
-//       const { error } = await supabase.auth.exchangeCodeForSession(code);
-//       if (error) {
-//         fail(
-//           error.message.includes("expired") || error.message.includes("used")
-//             ? "El enlace expiró o ya fue usado. Solicita uno nuevo."
-//             : "No se pudo confirmar tu cuenta.",
-//         );
-//         return;
-//       }
-
-//       await succeed();
-//       return;
-//     }
-
-//     const { data, error } = await supabase.auth.getSession();
-//     if (error || !data.session) {
-//       fail("Enlace de confirmación inválido o ya utilizado.");
-//       return;
-//     }
-
-//     await succeed();
-//   } catch {
-//     fail("Ocurrió un error inesperado al confirmar tu cuenta.");
-//   }
-// });
 </script>
 
 <template>
@@ -170,12 +182,14 @@ onMounted(async () => {
           </h2>
           <p class="text-sm text-muted">{{ errorMessage }}</p>
         </div>
-        <UButton
-          to="/login"
-          block
-          label="Ir a iniciar sesión"
-          icon="i-lucide-log-in"
-        />
+        <div class="pt-2 space-y-2">
+          <UButton
+            to="/login"
+            block
+            label="Ir a iniciar sesión"
+            icon="i-lucide-log-in"
+          />
+        </div>
       </template>
     </div>
   </UCard>
