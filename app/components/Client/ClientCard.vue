@@ -8,6 +8,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  open: [client: Client];
   edit: [client: Client];
   delete: [client: Client];
   restore: [client: Client];
@@ -24,9 +25,15 @@ const initials = computed(() => {
 
 const isInactive = computed(() => props.client.is_active === false);
 
-const items = computed<DropdownMenuItem[][]>(() =>
-  isInactive.value
+const items = computed<DropdownMenuItem[][]>(() => {
+  const detailItem: DropdownMenuItem = {
+    label: "Ver detalle",
+    icon: "i-lucide-eye",
+    onSelect: () => emit("open", props.client),
+  };
+  return isInactive.value
     ? [
+        [detailItem],
         [
           {
             label: "Reactivar",
@@ -37,6 +44,7 @@ const items = computed<DropdownMenuItem[][]>(() =>
         ],
       ]
     : [
+        [detailItem],
         [
           {
             label: "Editar",
@@ -50,12 +58,21 @@ const items = computed<DropdownMenuItem[][]>(() =>
             onSelect: () => emit("delete", props.client),
           },
         ],
-      ],
-);
+      ];
+});
+
+function onCardClick() {
+  emit("open", props.client);
+}
 </script>
 
 <template>
-  <UCard class="overflow-hidden w-full" variant="subtle" :ui="{ body: 'p-4' }">
+  <UCard
+    class="overflow-hidden w-full cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
+    variant="subtle"
+    :ui="{ body: 'p-4' }"
+    @click="onCardClick"
+  >
     <div class="flex justify-between items-center gap-4">
       <div class="flex items-center gap-4 flex-1 min-w-0">
         <UAvatar
@@ -97,6 +114,7 @@ const items = computed<DropdownMenuItem[][]>(() =>
           color="neutral"
           aria-label="Más acciones"
           class="cursor-pointer shrink-0"
+          @click.stop
         />
       </UDropdownMenu>
     </div>

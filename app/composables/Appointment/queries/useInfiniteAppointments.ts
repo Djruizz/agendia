@@ -19,7 +19,10 @@ const buildPseudoQuery = (
   return query.eq("followed_up", false).lte("date", cutoffIso);
 };
 
-export const useInfiniteAppointments = () => {
+export const useInfiniteAppointments = (options?: {
+  clientId?: string;
+}) => {
+  const clientId = options?.clientId;
   const supabase = useSupabaseClient();
   const user = useSupabaseUser();
   const statusFilter = ref<AppointmentStatusFilter>("ALL");
@@ -40,6 +43,10 @@ export const useInfiniteAppointments = () => {
       .order("date", { ascending: false })
       .range(from, to);
 
+    if (clientId) {
+      query = query.eq("client_id", clientId);
+    }
+
     if (
       statusFilter.value === "REAGENDADA" ||
       statusFilter.value === "REMEMBER"
@@ -58,6 +65,7 @@ export const useInfiniteAppointments = () => {
     "appointments",
     "list",
     user.value?.sub,
+    clientId ?? "all",
     statusFilter.value,
     weeksToFollowUp.value,
   ]);
