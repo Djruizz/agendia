@@ -13,6 +13,8 @@ export const serviceSchema = z.object({
     .min(1, "La duración debe ser mayor a 0")
     .max(1000000, "La duración debe ser menor a 1000000"),
   description: z.string("La descripción es inválida").optional(),
+  is_public: z.boolean().default(true),
+  image_path: z.string().nullable().optional(),
 });
 
 export type ServiceSchema = z.infer<typeof serviceSchema>;

@@ -14,6 +14,7 @@ export const useCreateService = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
+      queryClient.invalidateQueries({ queryKey: ["public-services"] });
     },
   });
 };

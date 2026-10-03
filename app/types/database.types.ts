@@ -188,7 +188,9 @@ export type Database = {
           description: string | null
           duration_minutes: number | null
           id: string
+          image_path: string | null
           is_active: boolean
+          is_public: boolean
           name: string
           price: number | null
           professional_id: string
@@ -198,7 +200,9 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           id?: string
+          image_path?: string | null
           is_active?: boolean
+          is_public?: boolean
           name: string
           price?: number | null
           professional_id: string
@@ -208,7 +212,9 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           id?: string
+          image_path?: string | null
           is_active?: boolean
+          is_public?: boolean
           name?: string
           price?: number | null
           professional_id?: string

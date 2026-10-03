@@ -2,12 +2,12 @@ import { useMutation } from "@tanstack/vue-query";
 import { FriendlyError } from "~/utils/mutationErrors";
 import { compressImage } from "~/utils/imageCompression";
 
-const ALLOWED_EXTS = ["png", "jpg", "jpeg", "webp", "svg"] as const;
-const MAX_RAW_BYTES = 15_000_000; // Permite logos de hasta 15MB ya que se comprimen client-side
+const ALLOWED_EXTS = ["png", "jpg", "jpeg", "webp"] as const;
+const MAX_RAW_BYTES = 15_000_000; // Permite fotos de hasta 15MB ya que se comprimen client-side
 
 const getExt = (name: string): string | undefined => name.split(".").pop()?.toLowerCase();
 
-export const useUploadLogo = () => {
+export const useUploadServiceImage = () => {
   const supabase = useSupabaseClient();
   const user = useSupabaseUser();
 
@@ -15,26 +15,26 @@ export const useUploadLogo = () => {
     mutationFn: async (file: File): Promise<string> => {
       const ext = getExt(file.name);
       if (!ext || !ALLOWED_EXTS.includes(ext as (typeof ALLOWED_EXTS)[number])) {
-        throw new FriendlyError("Formato no soportado (png, jpg, jpeg, webp, svg)");
+        throw new FriendlyError("Formato no soportado (usa png, jpg, jpeg o webp)");
       }
       if (file.size > MAX_RAW_BYTES) {
-        throw new FriendlyError("La imagen supera el máximo permitido de 15MB");
+        throw new FriendlyError("La imagen original supera el máximo permitido de 15MB");
       }
 
-      // Si es SVG, se conserva intacto; si es raster (png, jpg, webp),
-      // se redimensiona a máx 512px con calidad 0.90 preservando transparencia
-      const optimizedFile = await compressImage(file, {
-        maxWidth: 512,
-        maxHeight: 512,
-        quality: 0.90,
+      // Comprimir en el navegador antes de enviar a Supabase Storage
+      const compressed = await compressImage(file, {
+        maxWidth: 1000,
+        maxHeight: 1000,
+        quality: 0.82,
         outputFormat: "image/webp",
       });
 
-      const finalExt = getExt(optimizedFile.name) || ext;
-      const path = `logos/${user.value!.sub}/logo-${crypto.randomUUID()}.${finalExt}`;
+      const finalExt = getExt(compressed.name) || "webp";
+      const path = `services/${user.value!.sub}/service-${crypto.randomUUID()}.${finalExt}`;
+
       const { error } = await supabase.storage
         .from("user-assets")
-        .upload(path, optimizedFile, { upsert: false, contentType: optimizedFile.type });
+        .upload(path, compressed, { upsert: false, contentType: compressed.type });
 
       if (error) throw error;
       return path;
@@ -42,18 +42,21 @@ export const useUploadLogo = () => {
   });
 };
 
-export const useRemoveLogo = () => {
+export const useRemoveServiceImage = () => {
   const supabase = useSupabaseClient();
 
   return useMutation({
     mutationFn: async (path: string) => {
+      if (!path) return;
       const { error } = await supabase.storage.from("user-assets").remove([path]);
       if (error) throw error;
     },
   });
 };
 
-export const useLogoPublicUrl = (path: string | null | Ref<string | null>) => {
+export const useServiceImagePublicUrl = (
+  path: string | null | undefined | Ref<string | null | undefined>,
+) => {
   const supabase = useSupabaseClient();
   const pathRef = computed(() =>
     typeof path === "string" ? path : path?.value ?? null,
