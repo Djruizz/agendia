@@ -12,8 +12,9 @@ definePageMeta({
       description="Gestiona los datos comerciales y la presencia pública de tu marca"
       icon="i-lucide-store"
     />
-    <div class="p-1">
+    <div class="p-1 space-y-6">
       <SettingsBusinessProfile />
+      <SettingsBusinessSocials />
     </div>
   </div>
 </template>

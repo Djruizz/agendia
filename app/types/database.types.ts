@@ -110,6 +110,7 @@ export type Database = {
           owner_name: string | null
           phone: string | null
           slug: string
+          socials: Json
           timezone: string
           updated_at: string
           user_id: string
@@ -125,6 +126,7 @@ export type Database = {
           owner_name?: string | null
           phone?: string | null
           slug: string
+          socials?: Json
           timezone?: string
           updated_at?: string
           user_id: string
@@ -140,6 +142,7 @@ export type Database = {
           owner_name?: string | null
           phone?: string | null
           slug?: string
+          socials?: Json
           timezone?: string
           updated_at?: string
           user_id?: string

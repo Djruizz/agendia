@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getSocialPlatform, normalizeSocialUrl } from "~/utils/socialNetworks";
+
 const props = defineProps<{
   business: BusinessProfile;
   logoUrl: string | null;
@@ -14,6 +16,23 @@ const whatsappLink = computed(() => {
     `Hola ${props.business.business_name}, me interesa agendar una cita.`,
   );
   return `https://wa.me/${digits}?text=${text}`;
+});
+
+const socialLinks = computed(() => {
+  if (!Array.isArray(props.business.socials)) return [];
+  const list = props.business.socials as unknown as BusinessSocialItem[];
+  return list
+    .filter((s) => s && typeof s.url === "string" && s.url.trim().length > 0)
+    .map((s) => {
+      const platform = getSocialPlatform(String(s.network));
+      return {
+        key: platform.key,
+        name: platform.name,
+        icon: platform.icon,
+        colorClass: platform.colorClass,
+        url: normalizeSocialUrl(s.url),
+      };
+    });
 });
 
 const initial = computed(() =>
@@ -41,16 +60,10 @@ const initial = computed(() =>
         <h1 class="text-2xl font-bold text-highlighted">
           {{ business.business_name }}
         </h1>
-        <p
-          v-if="business.category"
-          class="text-sm text-muted mt-0.5"
-        >
+        <p v-if="business.category" class="text-sm text-muted mt-0.5">
           {{ business.category }}
         </p>
-        <p
-          v-if="business.owner_name"
-          class="text-sm text-muted"
-        >
+        <p v-if="business.owner_name" class="text-sm text-muted">
           {{ business.owner_name }}
         </p>
       </div>
@@ -62,6 +75,35 @@ const initial = computed(() =>
     >
       {{ business.description }}
     </p>
+
+    <!-- Redes sociales del negocio -->
+    <div
+      v-if="socialLinks.length > 0"
+      class="flex flex-wrap items-center gap-2"
+    >
+      <p class="text-sm text-muted">Redes sociales:</p>
+      <UTooltip
+        v-for="social in socialLinks"
+        :key="social.url"
+        :text="social.name"
+      >
+        <UButton
+          :to="social.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          :aria-label="`${social.name} de ${business.business_name}`"
+          variant="ghost"
+          size="md"
+          class="rounded-full hover:scale-110 transition-transform"
+        >
+          <UIcon
+            :name="social.icon"
+            class="size-5 shrink-0"
+            :class="social.colorClass"
+          />
+        </UButton>
+      </UTooltip>
+    </div>
 
     <div v-if="whatsappLink">
       <UButton

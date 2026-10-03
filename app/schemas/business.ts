@@ -55,5 +55,20 @@ export const businessSchema = z.object({
 
 export const businessProfileEditSchema = businessSchema.omit({ slug: true });
 
+export const businessSocialItemSchema = z.object({
+  network: z.string().min(1, "La red social es requerida"),
+  url: z
+    .string()
+    .min(1, "El enlace es requerido")
+    .max(250, "El enlace debe tener menos de 250 caracteres"),
+});
+
+export const businessSocialsSchema = z
+  .array(businessSocialItemSchema)
+  .max(5, "Puedes agregar como máximo 5 redes sociales");
+
 export type BusinessSchema = z.infer<typeof businessSchema>;
 export type BusinessProfileEditSchema = z.infer<typeof businessProfileEditSchema>;
+export type BusinessSocialItemSchema = z.infer<typeof businessSocialItemSchema>;
+export type BusinessSocialsSchema = z.infer<typeof businessSocialsSchema>;
+
