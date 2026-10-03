@@ -24,7 +24,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@iconify-json/fa6-brands": "^1.2.6",
     "@iconify-json/lucide": "^1.2.132",
+    "@iconify-json/simple-icons": "^1.2.98",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.10"
   }
