@@ -14,6 +14,10 @@ const emit = defineEmits<{
 
 const isInactive = computed(() => props.service.is_active === false);
 
+const imageUrl = useServiceImagePublicUrl(
+  computed(() => props.service.image_path),
+);
+
 const formattedDuration = computed(() => {
   const mins = props.service.duration_minutes ?? 0;
   if (mins < 60) return `${mins} min`;
@@ -59,12 +63,23 @@ const items = computed<DropdownMenuItem[][]>(() =>
 <template>
   <UCard class="overflow-hidden w-full" variant="subtle" :ui="{ body: 'p-4' }">
     <div class="flex justify-between items-center gap-4">
-      <div class="flex items-start gap-4 flex-1 min-w-0">
-        <!-- <div
-          class="flex items-center justify-center size-10 rounded-xl bg-primary/10 shrink-0"
-        >
-          <UIcon name="i-lucide-scissors" class="size-5 text-primary" />
-        </div> -->
+      <div class="flex items-start gap-3.5 flex-1 min-w-0">
+        <!-- Thumbnail de imagen del servicio o icono fallback -->
+        <div class="size-13 rounded-xl overflow-hidden shrink-0 border border-muted bg-muted/20 flex items-center justify-center">
+          <img
+            v-if="imageUrl"
+            :src="imageUrl"
+            :alt="service.name"
+            class="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+          <UIcon
+            v-else
+            name="i-lucide-scissors"
+            class="size-5 text-muted"
+          />
+        </div>
 
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2 flex-wrap">
@@ -79,6 +94,24 @@ const items = computed<DropdownMenuItem[][]>(() =>
               icon="i-lucide-eye-off"
               label="Inactivo"
             />
+            <template v-else>
+              <UBadge
+                v-if="service.is_public"
+                size="sm"
+                variant="subtle"
+                color="primary"
+                icon="i-lucide-globe"
+                label="Público"
+              />
+              <UBadge
+                v-else
+                size="sm"
+                variant="subtle"
+                color="neutral"
+                icon="i-lucide-lock"
+                label="Interno"
+              />
+            </template>
           </div>
           <p
             v-if="service.description"

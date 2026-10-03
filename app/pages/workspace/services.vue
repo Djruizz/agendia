@@ -1,8 +1,14 @@
 <script setup lang="ts">
+import {
+  MAX_PUBLIC_SERVICES,
+  usePublicServicesCount,
+} from "~/composables/Service/queries/useServices";
+
 definePageMeta({
   layout: "workspace",
   middleware: ["auth", "onboarding"],
 });
+
 const {
   data: services,
   isFetching,
@@ -10,6 +16,8 @@ const {
   refetch,
   activeFilter,
 } = useServices();
+
+const { data: publicCount } = usePublicServicesCount();
 
 const openModal = ref(false);
 const serviceToEdit = ref<Service | null>(null);
@@ -35,13 +43,13 @@ async function onRestore(service: Service) {
     await updateService({ id: service.id, service: { is_active: true } });
     toast.add({
       title: "Servicio reactivado",
-      description: `${service.name} volvió a tu lista y a tu página pública`,
+      description: `${service.name} volvió a tu lista activa`,
       color: "success",
       icon: "i-lucide-check-circle",
     });
   } catch (err: any) {
     toast.add({
-      title: "Error",
+      title: "No se pudo reactivar el servicio",
       description: describeMutationError(err),
       color: "error",
       icon: "i-lucide-alert-circle",
@@ -54,10 +62,19 @@ async function onRestore(service: Service) {
   <div class="space-y-4">
     <LayoutPageHeader
       title="Servicios"
-      description="Gestiona los servicios que ofreces"
+      description="Gestiona los servicios de tu agenda y tu catálogo público"
       icon="i-lucide-scissors"
     >
       <template #actions>
+        <UBadge
+          :color="(publicCount ?? 0) >= MAX_PUBLIC_SERVICES ? 'warning' : 'neutral'"
+          variant="subtle"
+          size="md"
+          icon="i-lucide-globe"
+          class="hidden sm:inline-flex"
+        >
+          Públicos: {{ publicCount ?? 0 }} / {{ MAX_PUBLIC_SERVICES }}
+        </UBadge>
         <UButton
           icon="i-lucide-refresh-cw"
           variant="link"

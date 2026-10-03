@@ -17,6 +17,7 @@ export function usePublicServices(
         .select("*")
         .eq("professional_id", idRef.value!)
         .eq("is_active", true)
+        .eq("is_public", true)
         .order("name", { ascending: true });
       if (error) throw error;
       return data ?? [];
