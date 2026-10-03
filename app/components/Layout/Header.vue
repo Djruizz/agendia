@@ -15,6 +15,16 @@ const isDark = computed({
 const items = computed<DropdownMenuItem[][]>(() => [
   [
     {
+      label: "Mi Negocio",
+      icon: "i-lucide-store",
+      to: "/workspace/business",
+    },
+    {
+      label: "Ganancias",
+      icon: "i-lucide-wallet",
+      to: "/workspace/earnings",
+    },
+    {
       label: "Configuración",
       icon: "i-lucide-settings",
       to: "/workspace/settings",
@@ -58,28 +68,18 @@ const items = computed<DropdownMenuItem[][]>(() => [
             :to="reportUrl"
             target="_blank"
             icon="i-lucide-message-circle-warning"
-            color="neutral"
+            color="warning"
             variant="ghost"
             aria-label="Reportar problema"
             class="cursor-pointer"
           />
         </UTooltip>
-        <UTooltip text="Ganancias">
-          <UButton
-            to="/workspace/earnings"
-            icon="i-lucide-wallet"
-            color="neutral"
-            variant="ghost"
-            aria-label="Ganancias"
-            class="cursor-pointer"
-          />
-        </UTooltip>
         <UDropdownMenu :items="items" :ui="{ content: 'min-w-48' }">
           <UButton
-            icon="i-lucide-settings"
+            icon="i-lucide-menu"
             color="neutral"
             variant="ghost"
-            aria-label="Configuración"
+            aria-label="Menú principal"
             class="cursor-pointer"
           />
         </UDropdownMenu>
