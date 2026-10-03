@@ -194,121 +194,140 @@ async function copyLink() {
 </script>
 
 <template>
-  <SettingsSection
-    icon="i-lucide-store"
-    title="Perfil del negocio"
-    description="Edita los datos comerciales y la publicación de tu página."
-  >
-    <div class="flex items-center gap-4">
-      <div
-        class="size-16 rounded-lg ring-1 ring-default bg-elevated flex items-center justify-center overflow-hidden shrink-0"
-      >
-        <img
-          v-if="logoUrl"
-          :src="logoUrl"
-          alt="Logo"
-          class="size-full object-cover"
-        />
-        <UIcon v-else name="i-lucide-image" class="size-6 text-muted" />
+  <div class="space-y-6">
+    <!-- Card 1: Perfil y Datos del Negocio -->
+    <SettingsSection
+      icon="i-lucide-store"
+      title="Perfil del negocio"
+      description="Edita la información comercial y la identidad de tu marca."
+    >
+      <div class="flex items-center gap-4">
+        <div
+          class="size-16 rounded-lg ring-1 ring-default bg-elevated flex items-center justify-center overflow-hidden shrink-0"
+        >
+          <img
+            v-if="logoUrl"
+            :src="logoUrl"
+            alt="Logo"
+            class="size-full object-cover"
+          />
+          <UIcon v-else name="i-lucide-image" class="size-6 text-muted" />
+        </div>
+        <div class="flex flex-col gap-2">
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            class="hidden"
+            @change="onFileChange"
+          />
+          <div class="flex flex-wrap items-center gap-2">
+            <UButton
+              label="Subir logo"
+              icon="i-lucide-upload"
+              color="neutral"
+              variant="outline"
+              :loading="uploadLogo.isPending.value"
+              @click="fileInput?.click()"
+            />
+            <UButton
+              v-if="profile?.logo_path"
+              label="Quitar"
+              icon="i-lucide-trash"
+              color="error"
+              variant="ghost"
+              :loading="removeLogo.isPending.value"
+              @click="onRemoveLogo"
+            />
+          </div>
+          <p class="text-xs text-muted">PNG, JPG, WEBP o SVG. Optimización automática.</p>
+        </div>
       </div>
-      <div class="flex flex-col gap-2">
-        <input
-          ref="fileInput"
-          type="file"
-          accept="image/png,image/jpeg,image/webp,image/svg+xml"
-          class="hidden"
-          @change="onFileChange"
-        />
+
+      <UForm
+        :schema="businessProfileEditSchema"
+        :state="state"
+        @submit="saveProfile"
+      >
+        <BusinessFormFields :state="state">
+          <div class="sm:col-span-2 flex justify-end">
+            <UButton
+              type="submit"
+              label="Guardar cambios"
+              color="primary"
+              :disabled="!isDirty"
+              :loading="updateProfile.isPending.value"
+            />
+          </div>
+        </BusinessFormFields>
+      </UForm>
+    </SettingsSection>
+
+    <!-- Card 2: Página Pública y Presencia Online -->
+    <SettingsSection
+      icon="i-lucide-globe"
+      title="Página pública"
+      description="Personaliza la presencia en línea de tu negocio y comparte tu catálogo."
+    >
+      <SettingsRow
+        label="Publicar mi página"
+        description="Activa la publicación para que tu catálogo sea visible en /p/[slug]."
+      >
+        <div class="flex items-center gap-3">
+          <UBadge
+            :color="isPublished ? 'success' : 'neutral'"
+            variant="subtle"
+            size="sm"
+          >
+            {{ isPublished ? "Publicada" : "No publicada" }}
+          </UBadge>
+          <USwitch
+            v-model="isPublished"
+            :disabled="updateProfile.isPending.value"
+          />
+        </div>
+      </SettingsRow>
+
+      <SettingsRow
+        label="Enlace público"
+        description="Personaliza la dirección web de tu página. (3+ caracteres)"
+        wrap
+      >
+        <SettingsSlugInput v-if="profile?.slug" :current-slug="profile.slug" />
+      </SettingsRow>
+
+      <SettingsRow
+        label="Color de tu página pública"
+        description="El color temático con el que tus clientes verán tu catálogo."
+      >
+        <SettingsBrandColorSelect />
+      </SettingsRow>
+
+      <SettingsRow
+        label="Acceso y vista previa"
+        description="Comparte el enlace con tus clientes o previsualiza cómo se ve."
+        wrap
+      >
         <div class="flex flex-wrap items-center gap-2">
           <UButton
-            label="Subir logo"
-            icon="i-lucide-upload"
+            :to="publicUrl || undefined"
+            target="_blank"
+            icon="i-lucide-external-link"
+            label="Vista previa"
             color="neutral"
             variant="outline"
-            :loading="uploadLogo.isPending.value"
-            @click="fileInput?.click()"
+            :disabled="!publicUrl"
           />
           <UButton
-            v-if="profile?.logo_path"
-            label="Quitar"
-            icon="i-lucide-trash"
-            color="error"
-            variant="ghost"
-            :loading="removeLogo.isPending.value"
-            @click="onRemoveLogo"
+            icon="i-lucide-copy"
+            label="Copiar enlace"
+            color="neutral"
+            variant="outline"
+            :disabled="!publicUrl"
+            @click="copyLink"
           />
         </div>
-        <p class="text-xs text-muted">PNG, JPG, WEBP o SVG. Máximo 2MB.</p>
-      </div>
-    </div>
-
-    <UForm
-      :schema="businessProfileEditSchema"
-      :state="state"
-      @submit="saveProfile"
-    >
-      <BusinessFormFields :state="state">
-        <div class="sm:col-span-2 flex justify-end">
-          <UButton
-            type="submit"
-            label="Guardar cambios"
-            color="primary"
-            :disabled="!isDirty"
-            :loading="updateProfile.isPending.value"
-          />
-        </div>
-      </BusinessFormFields>
-    </UForm>
-
-    <SettingsRow
-      label="Enlace público"
-      description="Personaliza el slug de tu página pública. (3+ caracteres)"
-      wrap
-    >
-      <SettingsSlugInput v-if="profile?.slug" :current-slug="profile.slug" />
-    </SettingsRow>
-
-    <SettingsRow
-      label="Color de tu página pública"
-      description="El color con el que se muestra tu página en /p/[slug]."
-    >
-      <SettingsBrandColorSelect />
-    </SettingsRow>
-
-    <SettingsRow
-      label="Publicar mi página"
-      description="Activa la publicación para que tu página sea visible en /p/[slug]."
-    >
-      <USwitch
-        v-model="isPublished"
-        :disabled="updateProfile.isPending.value"
-      />
-    </SettingsRow>
-
-    <SettingsRow
-      label="Enlace público"
-      description="Tu página en /p/{slug}. Vista previa funciona aunque no esté publicada."
-      wrap
-    >
-      <div class="flex flex-wrap items-center gap-2">
-        <UButton
-          :to="publicUrl || undefined"
-          target="_blank"
-          icon="i-lucide-external-link"
-          label="Vista previa"
-          color="neutral"
-          variant="outline"
-          :disabled="!publicUrl"
-        />
-        <UButton
-          icon="i-lucide-copy"
-          label="Copiar"
-          color="neutral"
-          variant="outline"
-          :disabled="!publicUrl"
-          @click="copyLink"
-        />
-      </div>
-    </SettingsRow>
-  </SettingsSection>
+      </SettingsRow>
+    </SettingsSection>
+  </div>
 </template>
