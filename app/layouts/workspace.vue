@@ -44,6 +44,9 @@ watch(
       </UContainer>
     </UMain>
 
+    <PwaInstallBanner />
+    <PwaInstallModalIOS />
+
     <LayoutBottomNav />
   </div>
 </template>

@@ -4,6 +4,7 @@ import type { DropdownMenuItem } from "@nuxt/ui";
 const supabase = useSupabaseClient();
 const colorMode = useColorMode();
 const { enabled: supportEnabled, reportUrl } = useSupportWhatsApp();
+const { canInstall, isInstalled, isIOS, install } = usePwaInstall();
 
 const isDark = computed({
   get: () => colorMode.value === "dark",
@@ -12,8 +13,8 @@ const isDark = computed({
   },
 });
 
-const items = computed<DropdownMenuItem[][]>(() => [
-  [
+const items = computed<DropdownMenuItem[][]>(() => {
+  const mainLinks: DropdownMenuItem[] = [
     {
       label: "Mi Negocio",
       icon: "i-lucide-store",
@@ -29,19 +30,33 @@ const items = computed<DropdownMenuItem[][]>(() => [
       icon: "i-lucide-settings",
       to: "/workspace/settings",
     },
-  ],
-  [
-    {
-      label: "Cerrar sesión",
-      icon: "i-lucide-log-out",
-      color: "error",
-      onSelect: async () => {
-        await supabase.auth.signOut();
-        await navigateTo("/login", { external: true });
+  ];
+
+  if (canInstall.value && !isInstalled.value) {
+    mainLinks.push({
+      label: isIOS.value ? "Cómo instalar en iPhone" : "Instalar aplicación",
+      icon: "i-lucide-download",
+      onSelect: () => {
+        install();
       },
-    },
-  ],
-]);
+    });
+  }
+
+  return [
+    mainLinks,
+    [
+      {
+        label: "Cerrar sesión",
+        icon: "i-lucide-log-out",
+        color: "error",
+        onSelect: async () => {
+          await supabase.auth.signOut();
+          await navigateTo("/login", { external: true });
+        },
+      },
+    ],
+  ];
+});
 </script>
 
 <template>
@@ -63,6 +78,26 @@ const items = computed<DropdownMenuItem[][]>(() => [
           label="Beta"
           class="hidden sm:inline-flex"
         />
+        <UTooltip
+          v-if="canInstall && !isInstalled"
+          :text="
+            isIOS
+              ? 'Cómo instalar en iPhone / iPad'
+              : 'Instalar Agendia como app'
+          "
+        >
+          <UButton
+            icon="i-lucide-download"
+            color="primary"
+            variant="subtle"
+            size="sm"
+            aria-label="Instalar Agendia como app"
+            class="cursor-pointer font-medium"
+            @click="install"
+          >
+            <span class="hidden md:inline text-xs">Instalar app</span>
+          </UButton>
+        </UTooltip>
         <UTooltip v-if="supportEnabled" text="Reportar problema">
           <UButton
             :to="reportUrl"

@@ -14,6 +14,7 @@ definePageMeta({
     />
     <div class="space-y-4 p-1">
       <SettingsAppearance />
+      <SettingsPwaInstall />
       <SettingsPreferences />
       <SettingsWhatsAppMessages />
       <SettingsAccountSecurity />
