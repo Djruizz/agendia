@@ -21,7 +21,8 @@ const { showIOSModal } = usePwaInstall();
           <div class="min-w-0 text-xs">
             <p class="font-semibold text-highlighted">1. Toca "Compartir"</p>
             <p class="text-muted mt-0.5">
-              En la barra inferior de Safari, pulsa el botón de compartir (el cuadrado con la flecha hacia arriba).
+              En la barra de busqueda de tu navegador, pulsa el botón de
+              compartir (el cuadrado con la flecha hacia arriba).
             </p>
           </div>
         </div>
@@ -39,7 +40,8 @@ const { showIOSModal } = usePwaInstall();
               2. "Agregar a pantalla de inicio"
             </p>
             <p class="text-muted mt-0.5">
-              Desliza las opciones hacia abajo y pulsa en <strong>Agregar a pantalla de inicio</strong>.
+              Desliza las opciones hacia abajo y pulsa en
+              <strong>Agregar a pantalla de inicio</strong>.
             </p>
           </div>
         </div>
@@ -55,7 +57,8 @@ const { showIOSModal } = usePwaInstall();
           <div class="min-w-0 text-xs">
             <p class="font-semibold text-highlighted">3. Toca "Agregar"</p>
             <p class="text-muted mt-0.5">
-              Confirma en la esquina superior derecha. ¡Listo! Agendia aparecerá como una app en tu pantalla.
+              Confirma en la esquina superior derecha. ¡Listo! Agendia aparecerá
+              como una app en tu pantalla.
             </p>
           </div>
         </div>
