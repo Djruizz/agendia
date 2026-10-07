@@ -60,7 +60,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
 </script>
 
 <template>
-  <UHeader :toggle="false" class="sticky-top">
+  <UHeader :toggle="false" class="sticky-top" to="/workspace">
     <template #title>
       <div class="px-2 py-1 rounded-xl">
         <img
