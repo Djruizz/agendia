@@ -83,6 +83,7 @@ export default defineNuxtConfig({
       background_color: "#ffffff",
       display: "standalone",
       start_url: "/workspace",
+      scope: "/workspace",
       icons: [
         {
           src: "/icon-192x192.png",
